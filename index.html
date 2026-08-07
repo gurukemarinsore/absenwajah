@@ -315,7 +315,7 @@
 
     <section id="panel-absen" class="panel active">
       <h2 class="section-title">Scan Absensi</h2>
-      <p class="section-desc">Pilih jenis absensi, aktifkan kamera, lalu kedipkan mata sekali saat diminta.</p>
+      <p class="section-desc">Pilih jenis absensi, aktifkan kamera, lalu ikuti petunjuk pemeriksaan kehadiran pada layar.</p>
 
       <div class="grid">
         <div class="field">
@@ -351,7 +351,7 @@
       </div>
 
       <div class="hint">
-        <b>Catatan:</b> versi ini memakai verifikasi 1:1. Guru mengisi ID lebih dulu, lalu backend hanya membandingkan wajah dengan template milik ID tersebut. Tantangan kedip adalah pemeriksaan kehadiran dasar, bukan liveness anti-spoof tingkat keamanan tinggi.
+        <b>Catatan:</b> versi ini memakai verifikasi 1:1. Guru mengisi ID lebih dulu, lalu backend hanya membandingkan wajah dengan template milik ID tersebut. Pemeriksaan kehadiran memakai kedipan adaptif dengan gerakan kepala sebagai cadangan; ini tetap bukan liveness anti-spoof tingkat keamanan tinggi.
       </div>
     </section>
 
@@ -714,14 +714,14 @@
       setBusy(true);
 
       try {
-        showStatus('statusDaftar', 'info', 'Pemeriksaan kehadiran: kedipkan kedua mata sekali…');
-        $('badgeDaftar').textContent = 'Kedipkan mata';
+        showStatus('statusDaftar', 'info', 'Pemeriksaan kehadiran: tatap kamera dan ikuti petunjuk pada layar…');
+        $('badgeDaftar').textContent = 'Kalibrasi wajah';
 
         await blinkChallenge($('videoDaftar'), (msg) => {
           $('badgeDaftar').textContent = msg;
         });
 
-        showStatus('statusDaftar', 'info', 'Kedipan terdeteksi. Mengambil 3 sampel wajah…');
+        showStatus('statusDaftar', 'info', 'Pemeriksaan kehadiran berhasil. Mengambil 3 sampel wajah…');
         $('badgeDaftar').textContent = 'Mengambil sampel';
 
         const samples = [];
@@ -778,14 +778,14 @@
       hideResult();
 
       try {
-        showStatus('statusAbsen', 'info', 'Kedipkan kedua mata sekali untuk melanjutkan…');
-        $('badgeAbsen').textContent = 'Kedipkan mata';
+        showStatus('statusAbsen', 'info', 'Tatap kamera dan ikuti petunjuk pemeriksaan kehadiran pada layar…');
+        $('badgeAbsen').textContent = 'Kalibrasi wajah';
 
         await blinkChallenge($('videoAbsen'), (msg) => {
           $('badgeAbsen').textContent = msg;
         });
 
-        showStatus('statusAbsen', 'info', 'Kedipan terdeteksi. Memverifikasi wajah…');
+        showStatus('statusAbsen', 'info', 'Pemeriksaan kehadiran berhasil. Memverifikasi wajah…');
         $('badgeAbsen').textContent = 'Memverifikasi';
 
         const descriptor = await captureDescriptor($('videoAbsen'));
@@ -847,16 +847,22 @@
     }
 
     async function blinkChallenge(videoEl, onProgress) {
+      // Revisi 002:
+      // 1) Kalibrasi EAR mata terbuka milik pengguna (tidak lagi memakai angka mutlak).
+      // 2) Kedipan diminta lebih perlahan agar lebih mudah tertangkap kamera HP.
+      // 3) Jika kedipan tidak tertangkap, otomatis beralih ke gerakan kepala sebagai fallback.
       const options = new faceapi.TinyFaceDetectorOptions({
-        inputSize: 224,
-        scoreThreshold: 0.5
+        inputSize: 160,
+        scoreThreshold: 0.45
       });
 
-      const deadline = Date.now() + 12000;
-      let closedSeen = false;
-      let faceSeenFrames = 0;
+      const calibrationDeadline = Date.now() + 6500;
+      const earSamples = [];
+      const noseSamples = [];
 
-      while (Date.now() < deadline) {
+      onProgress?.('Tatap kamera…');
+
+      while (Date.now() < calibrationDeadline && earSamples.length < 5) {
         const detections = await faceapi
           .detectAllFaces(videoEl, options)
           .withFaceLandmarks();
@@ -866,31 +872,133 @@
         }
 
         if (detections.length === 1) {
-          faceSeenFrames++;
+          const detection = detections[0];
+          const lm = detection.landmarks;
+          const leftEye = lm.getLeftEye();
+          const rightEye = lm.getRightEye();
+          const ear = (eyeAspectRatio(leftEye) + eyeAspectRatio(rightEye)) / 2;
+          const noseOffset = normalizedNoseOffset_(detection);
+
+          if (Number.isFinite(ear) && ear > 0.08 && ear < 0.60) {
+            earSamples.push(ear);
+            noseSamples.push(noseOffset);
+            onProgress?.(`Kalibrasi mata ${earSamples.length}/5`);
+          }
+        } else {
+          onProgress?.('Posisikan wajah di tengah');
+        }
+
+        await sleep(70);
+      }
+
+      if (earSamples.length < 3) {
+        throw new Error('Posisi mata belum terbaca stabil. Hadapkan wajah lurus ke kamera dan pastikan hanya satu wajah terlihat.');
+      }
+
+      // Ambil median bagian atas agar kedipan kecil saat kalibrasi tidak menurunkan baseline.
+      const sortedEar = [...earSamples].sort((a, b) => b - a);
+      const topEar = sortedEar.slice(0, Math.min(3, sortedEar.length));
+      const openEar = topEar.reduce((sum, value) => sum + value, 0) / topEar.length;
+
+      const closedThreshold = Math.max(0.12, openEar * 0.72);
+      const reopenThreshold = Math.max(closedThreshold + 0.015, openEar * 0.88);
+
+      const validNose = noseSamples.filter(Number.isFinite);
+      const baselineNose = validNose.length
+        ? validNose.reduce((sum, value) => sum + value, 0) / validNose.length
+        : 0;
+
+      // Tahap 1: kedipan adaptif.
+      const blinkDeadline = Date.now() + 10000;
+      let closedSeen = false;
+
+      onProgress?.('Kedip perlahan ±1 detik');
+
+      while (Date.now() < blinkDeadline) {
+        const detections = await faceapi
+          .detectAllFaces(videoEl, options)
+          .withFaceLandmarks();
+
+        if (detections.length > 1) {
+          throw new Error('Terdeteksi lebih dari satu wajah. Pastikan hanya satu orang di depan kamera.');
+        }
+
+        if (detections.length === 1) {
           const lm = detections[0].landmarks;
           const leftEye = lm.getLeftEye();
           const rightEye = lm.getRightEye();
           const ear = (eyeAspectRatio(leftEye) + eyeAspectRatio(rightEye)) / 2;
 
           if (!closedSeen) {
-            onProgress?.('Kedipkan mata');
-            if (ear < 0.20 && faceSeenFrames >= 2) {
+            onProgress?.('Kedip perlahan ±1 detik');
+            if (ear <= closedThreshold) {
               closedSeen = true;
-              onProgress?.('Buka mata');
+              onProgress?.('Mata tertutup — buka kembali');
             }
-          } else if (ear > 0.23) {
-            onProgress?.('Kedipan terdeteksi');
-            await sleep(250);
+          } else if (ear >= reopenThreshold) {
+            onProgress?.('Kedipan berhasil');
+            await sleep(220);
             return true;
           }
         } else {
-          onProgress?.('Cari wajah…');
+          onProgress?.('Posisikan wajah di tengah');
         }
 
-        await sleep(110);
+        await sleep(65);
       }
 
-      throw new Error('Kedipan belum terdeteksi. Pastikan wajah cukup terang dan kedipkan kedua mata dengan jelas, lalu coba lagi.');
+      // Tahap 2: fallback gerakan kepala.
+      // Tidak meminta arah tertentu agar tampilan kamera yang dicerminkan tidak membingungkan pengguna.
+      const headDeadline = Date.now() + 12000;
+      let sideSeen = false;
+
+      onProgress?.('Gerakkan kepala ke salah satu sisi');
+
+      while (Date.now() < headDeadline) {
+        const detections = await faceapi
+          .detectAllFaces(videoEl, options)
+          .withFaceLandmarks();
+
+        if (detections.length > 1) {
+          throw new Error('Terdeteksi lebih dari satu wajah. Pastikan hanya satu orang di depan kamera.');
+        }
+
+        if (detections.length === 1) {
+          const noseOffset = normalizedNoseOffset_(detections[0]);
+          const movement = Math.abs(noseOffset - baselineNose);
+
+          if (!sideSeen) {
+            onProgress?.('Gerakkan kepala perlahan ke samping');
+            if (movement >= 0.065) {
+              sideSeen = true;
+              onProgress?.('Kembali hadap lurus');
+            }
+          } else if (movement <= 0.035) {
+            onProgress?.('Gerakan kepala berhasil');
+            await sleep(220);
+            return true;
+          }
+        } else {
+          onProgress?.('Posisikan wajah di tengah');
+        }
+
+        await sleep(70);
+      }
+
+      throw new Error('Pemeriksaan kehadiran belum terbaca. Tatap kamera, lalu kedip perlahan sekitar 1 detik. Jika diminta, gerakkan kepala ke samping dan kembali lurus.');
+    }
+
+    function normalizedNoseOffset_(detection) {
+      const lm = detection.landmarks;
+      const nose = lm.getNose();
+      const box = detection.detection.box;
+
+      if (!nose || nose.length < 4 || !box || !box.width) return 0;
+
+      const noseTip = nose[3];
+      const boxCenterX = box.x + (box.width / 2);
+
+      return (noseTip.x - boxCenterX) / box.width;
     }
 
     function eyeAspectRatio(eye) {
