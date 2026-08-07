@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Absensi Guru - Verifikasi Wajah</title>
+
+  <!-- face-api.js 0.22.2, dipin agar versi tidak berubah mendadak -->
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #162033;
+      --muted: #68758b;
+      --border: #dfe5ee;
+      --primary: #2155cd;
+      --primary-dark: #173f9f;
+      --ok: #117a4b;
+      --warn: #9a6400;
+      --danger: #b42318;
+      --shadow: 0 12px 36px rgba(20, 38, 70, .10);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .app {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      padding: 18px 14px 48px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #ffffff 0%, #eef4ff 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--primary);
+      background: #eaf1ff;
+      border-radius: 999px;
+      padding: 7px 11px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(25px, 5vw, 38px);
+      letter-spacing: -.03em;
+    }
+
+    .hero p {
+      margin: 0;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: #e9edf4;
+      border-radius: 16px;
+      padding: 6px;
+      margin-bottom: 14px;
+    }
+
+    .tab {
+      appearance: none;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-weight: 800;
+      padding: 12px 10px;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 3px 12px rgba(20, 38, 70, .08);
+    }
+
+    .panel {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel.active { display: block; }
+
+    .section-title {
+      margin: 0 0 4px;
+      font-size: 20px;
+    }
+
+    .section-desc {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 620px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 800;
+      margin: 0 0 7px;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 12px 13px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+    }
+
+    .field input:focus, .field select:focus {
+      border-color: #8aa9f4;
+      box-shadow: 0 0 0 4px rgba(33, 85, 205, .10);
+    }
+
+    .camera-box {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      margin: 16px 0 12px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #101828;
+      border: 1px solid #293348;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+
+    .camera-placeholder {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      text-align: center;
+      color: #cbd5e1;
+      line-height: 1.5;
+      background: radial-gradient(circle at center, #243147, #101828 70%);
+      z-index: 1;
+    }
+
+    .face-guide {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 44%;
+      height: 68%;
+      transform: translate(-50%, -50%);
+      border: 3px solid rgba(255,255,255,.84);
+      border-radius: 48% 48% 45% 45% / 40% 40% 55% 55%;
+      box-shadow: 0 0 0 999px rgba(0,0,0,.18);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .camera-badge {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      z-index: 3;
+      background: rgba(10, 20, 35, .78);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      font-size: 12px;
+      padding: 7px 10px;
+      backdrop-filter: blur(8px);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button.action {
+      appearance: none;
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .08s ease, opacity .2s ease;
+    }
+
+    button.action:active { transform: translateY(1px); }
+    button.action:disabled { cursor: not-allowed; opacity: .55; }
+
+    .primary { background: var(--primary); color: #fff; }
+    .primary:hover { background: var(--primary-dark); }
+    .secondary { background: #edf2f8; color: #25344c; }
+    .danger { background: #fff0ee; color: var(--danger); }
+
+    .status {
+      display: none;
+      margin-top: 14px;
+      padding: 13px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      line-height: 1.5;
+      font-size: 14px;
+      white-space: pre-line;
+    }
+
+    .status.show { display: block; }
+    .status.info { background: #eef4ff; border-color: #cddcff; color: #24498e; }
+    .status.ok { background: #ecfdf3; border-color: #b7ebcc; color: var(--ok); }
+    .status.warn { background: #fff8e8; border-color: #f3d98f; color: var(--warn); }
+    .status.error { background: #fff1f0; border-color: #f2c4bf; color: var(--danger); }
+
+    .result-card {
+      display: none;
+      margin-top: 14px;
+      border: 1px solid #b7ebcc;
+      background: #f2fff7;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .result-card.show { display: block; }
+    .result-name { font-size: 22px; font-weight: 900; margin-bottom: 3px; }
+    .result-meta { color: #496558; line-height: 1.5; }
+
+    .hint {
+      margin-top: 14px;
+      padding: 12px 13px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px dashed #ccd5e2;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .model-status {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    code.inline {
+      background: #eef1f5;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: .92em;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <section class="hero">
+      <div class="eyebrow">● Verifikasi wajah 1:1</div>
+      <h1>Absensi Guru</h1>
+      <p>Masukkan ID guru, lalu verifikasi wajah. Sistem tidak mengunduh database wajah ke browser; pencocokan dilakukan di backend terhadap ID yang diklaim.</p>
+      <div id="modelStatus" class="model-status">Memuat model pengenalan wajah…</div>
+    </section>
+
+    <nav class="tabs" aria-label="Menu">
+      <button class="tab active" data-tab="absen">Absensi</button>
+      <button class="tab" data-tab="daftar">Daftar / Rekam Wajah</button>
+    </nav>
+
+    <section id="panel-absen" class="panel active">
+      <h2 class="section-title">Scan Absensi</h2>
+      <p class="section-desc">Pilih jenis absensi, aktifkan kamera, lalu kedipkan mata sekali saat diminta.</p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="absenId">ID Guru</label>
+          <input id="absenId" autocomplete="off" placeholder="Contoh: GURU001" />
+        </div>
+        <div class="field">
+          <label for="jenisAbsen">Jenis Absensi</label>
+          <select id="jenisAbsen">
+            <option value="MASUK">Masuk</option>
+            <option value="PULANG">Pulang</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="camera-box">
+        <video id="videoAbsen" autoplay muted playsinline></video>
+        <div id="placeholderAbsen" class="camera-placeholder">Kamera belum aktif.<br>Tekan tombol <b>Aktifkan Kamera</b>.</div>
+        <div class="face-guide"></div>
+        <div id="badgeAbsen" class="camera-badge">Siap</div>
+      </div>
+
+      <div class="actions">
+        <button id="btnCameraAbsen" class="action secondary">Aktifkan Kamera</button>
+        <button id="btnVerifikasi" class="action primary" disabled>Verifikasi & Catat</button>
+        <button id="btnStopAbsen" class="action danger" disabled>Matikan Kamera</button>
+      </div>
+
+      <div id="statusAbsen" class="status"></div>
+      <div id="resultAbsen" class="result-card">
+        <div id="resultNama" class="result-name"></div>
+        <div id="resultMeta" class="result-meta"></div>
+      </div>
+
+      <div class="hint">
+        <b>Catatan:</b> versi ini memakai verifikasi 1:1. Guru mengisi ID lebih dulu, lalu backend hanya membandingkan wajah dengan template milik ID tersebut. Tantangan kedip adalah pemeriksaan kehadiran dasar, bukan liveness anti-spoof tingkat keamanan tinggi.
+      </div>
+    </section>
+
+    <section id="panel-daftar" class="panel">
+      <h2 class="section-title">Pendaftaran Wajah</h2>
+      <p class="section-desc">Admin harus lebih dulu menambahkan ID, nama, dan kode registrasi pada sheet <code class="inline">Data_Guru</code>.</p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="daftarId">ID Guru</label>
+          <input id="daftarId" autocomplete="off" placeholder="Contoh: GURU001" />
+        </div>
+        <div class="field">
+          <label for="kodeRegistrasi">Kode Registrasi</label>
+          <input id="kodeRegistrasi" type="password" inputmode="numeric" autocomplete="one-time-code" placeholder="Kode dari admin" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="btnCekGuru" class="action secondary">Cek Data Guru</button>
+      </div>
+
+      <div id="statusDaftar" class="status"></div>
+
+      <div class="camera-box">
+        <video id="videoDaftar" autoplay muted playsinline></video>
+        <div id="placeholderDaftar" class="camera-placeholder">Verifikasi ID dan kode registrasi terlebih dahulu.</div>
+        <div class="face-guide"></div>
+        <div id="badgeDaftar" class="camera-badge">Belum diverifikasi</div>
+      </div>
+
+      <div class="actions">
+        <button id="btnCameraDaftar" class="action secondary" disabled>Aktifkan Kamera</button>
+        <button id="btnRekamWajah" class="action primary" disabled>Rekam 3 Sampel Wajah</button>
+        <button id="btnStopDaftar" class="action danger" disabled>Matikan Kamera</button>
+      </div>
+
+      <div class="hint">
+        Saat pendaftaran, gunakan pencahayaan cukup, wajah menghadap kamera, dan jangan memakai masker/kacamata hitam. Tiga sampel descriptor disimpan agar pencocokan lebih stabil.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ============================================================
+    // 1) WAJIB: ganti dengan URL Web App Google Apps Script Anda.
+    //    Bentuk: https://script.google.com/macros/s/XXXXXXXX/exec
+    // ============================================================
+    const GAS_WEB_APP_URL = 'PASTE_URL_WEB_APP_GAS_DI_SINI';
+
+    // Model face-api.js dipin pada versi 0.22.2.
+    const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
+
+    const state = {
+      modelsReady: false,
+      streamAbsen: null,
+      streamDaftar: null,
+      daftarValidated: false,
+      daftarNama: '',
+      busy: false
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    window.addEventListener('DOMContentLoaded', () => {
+      bindUI();
+      waitForFaceApiAndLoadModels();
+    });
+
+    function bindUI() {
+      document.querySelectorAll('.tab').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      $('btnCameraAbsen').addEventListener('click', startCameraAbsen);
+      $('btnStopAbsen').addEventListener('click', stopCameraAbsen);
+      $('btnVerifikasi').addEventListener('click', prosesAbsensi);
+
+      $('btnCekGuru').addEventListener('click', cekGuruUntukRegistrasi);
+      $('btnCameraDaftar').addEventListener('click', startCameraDaftar);
+      $('btnStopDaftar').addEventListener('click', stopCameraDaftar);
+      $('btnRekamWajah').addEventListener('click', rekamWajah);
+
+      $('daftarId').addEventListener('input', resetValidasiDaftar);
+      $('kodeRegistrasi').addEventListener('input', resetValidasiDaftar);
+    }
+
+    async function waitForFaceApiAndLoadModels() {
+      try {
+        $('modelStatus').textContent = 'Memuat library face-api.js…';
+
+        let attempts = 0;
+        while (typeof window.faceapi === 'undefined' && attempts < 100) {
+          await sleep(100);
+          attempts++;
+        }
+        if (typeof window.faceapi === 'undefined') {
+          throw new Error('Library face-api.js gagal dimuat. Periksa koneksi internet.');
+        }
+
+        $('modelStatus').textContent = 'Memuat model deteksi dan pengenalan wajah…';
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+        ]);
+
+        state.modelsReady = true;
+        $('modelStatus').textContent = 'Model wajah siap digunakan.';
+        refreshButtons();
+      } catch (err) {
+        console.error(err);
+        $('modelStatus').textContent = 'Gagal memuat model: ' + err.message;
+        showStatus('statusAbsen', 'error', 'Model wajah gagal dimuat. Muat ulang halaman dan periksa koneksi internet.');
+      }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === tab));
+      $('panel-absen').classList.toggle('active', tab === 'absen');
+      $('panel-daftar').classList.toggle('active', tab === 'daftar');
+
+      if (tab === 'absen') stopCameraDaftar();
+      if (tab === 'daftar') stopCameraAbsen();
+    }
+
+    function normalizeId(value) {
+      return String(value || '').trim().toUpperCase();
+    }
+
+    function apiReady() {
+      return GAS_WEB_APP_URL &&
+        GAS_WEB_APP_URL.startsWith('https://script.google.com/macros/s/') &&
+        GAS_WEB_APP_URL.endsWith('/exec');
+    }
+
+    async function callApi(action, payload = {}) {
+      if (!apiReady()) {
+        throw new Error('URL Google Apps Script belum diisi pada GAS_WEB_APP_URL di index.html.');
+      }
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
+
+      try {
+        const response = await fetch(GAS_WEB_APP_URL, {
+          method: 'POST',
+          redirect: 'follow',
+          headers: {
+            // text/plain menjaga request tetap "simple request" dan menghindari preflight OPTIONS.
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify({ action, ...payload }),
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status + ' saat menghubungi backend.');
+        }
+
+        const text = await response.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error('Respons backend bukan JSON yang valid. Pastikan URL /exec dan deployment terbaru digunakan.');
+        }
+
+        if (!data.ok) {
+          const err = new Error(data.message || 'Permintaan ditolak backend.');
+          err.code = data.code || 'API_ERROR';
+          err.data = data;
+          throw err;
+        }
+
+        return data;
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          throw new Error('Backend terlalu lama merespons. Coba lagi.');
+        }
+        throw err;
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    async function openCamera(videoEl, facingMode = 'user') {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Browser tidak mendukung akses kamera. Gunakan Chrome/Edge/Safari terbaru melalui HTTPS.');
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode,
+          width: { ideal: 720 },
+          height: { ideal: 540 }
+        },
+        audio: false
+      });
+
+      videoEl.srcObject = stream;
+      await videoEl.play();
+      await waitVideoReady(videoEl);
+      return stream;
+    }
+
+    function waitVideoReady(videoEl) {
+      return new Promise((resolve, reject) => {
+        if (videoEl.readyState >= 2 && videoEl.videoWidth > 0) {
+          resolve();
+          return;
+        }
+
+        const timer = setTimeout(() => reject(new Error('Kamera tidak siap dalam waktu yang ditentukan.')), 10000);
+        const onReady = () => {
+          if (videoEl.videoWidth > 0) {
+            clearTimeout(timer);
+            videoEl.removeEventListener('loadeddata', onReady);
+            resolve();
+          }
+        };
+        videoEl.addEventListener('loadeddata', onReady);
+      });
+    }
+
+    function stopStream(stream) {
+      if (!stream) return;
+      stream.getTracks().forEach(track => track.stop());
+    }
+
+    async function startCameraAbsen() {
+      if (!state.modelsReady) {
+        showStatus('statusAbsen', 'warn', 'Model wajah masih dimuat. Tunggu beberapa detik.');
+        return;
+      }
+      try {
+        stopCameraAbsen();
+        state.streamAbsen = await openCamera($('videoAbsen'));
+        $('placeholderAbsen').style.display = 'none';
+        $('badgeAbsen').textContent = 'Kamera aktif';
+        showStatus('statusAbsen', 'info', 'Kamera aktif. Posisikan satu wajah di dalam panduan.');
+      } catch (err) {
+        console.error(err);
+        showStatus('statusAbsen', 'error', humanCameraError(err));
+      }
+      refreshButtons();
+    }
+
+    function stopCameraAbsen() {
+      stopStream(state.streamAbsen);
+      state.streamAbsen = null;
+      $('videoAbsen').srcObject = null;
+      $('placeholderAbsen').style.display = 'grid';
+      $('badgeAbsen').textContent = 'Siap';
+      refreshButtons();
+    }
+
+    async function startCameraDaftar() {
+      if (!state.daftarValidated) {
+        showStatus('statusDaftar', 'warn', 'Cek ID dan kode registrasi terlebih dahulu.');
+        return;
+      }
+      if (!state.modelsReady) {
+        showStatus('statusDaftar', 'warn', 'Model wajah masih dimuat.');
+        return;
+      }
+
+      try {
+        stopCameraDaftar();
+        state.streamDaftar = await openCamera($('videoDaftar'));
+        $('placeholderDaftar').style.display = 'none';
+        $('badgeDaftar').textContent = 'Kamera aktif';
+        showStatus('statusDaftar', 'info', `Data valid untuk ${state.daftarNama}. Posisikan satu wajah di dalam panduan.`);
+      } catch (err) {
+        console.error(err);
+        showStatus('statusDaftar', 'error', humanCameraError(err));
+      }
+      refreshButtons();
+    }
+
+    function stopCameraDaftar() {
+      stopStream(state.streamDaftar);
+      state.streamDaftar = null;
+      $('videoDaftar').srcObject = null;
+      $('placeholderDaftar').style.display = 'grid';
+      $('placeholderDaftar').innerHTML = state.daftarValidated
+        ? 'Kamera belum aktif.<br>Tekan tombol <b>Aktifkan Kamera</b>.'
+        : 'Verifikasi ID dan kode registrasi terlebih dahulu.';
+      $('badgeDaftar').textContent = state.daftarValidated ? 'Identitas valid' : 'Belum diverifikasi';
+      refreshButtons();
+    }
+
+    function humanCameraError(err) {
+      if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+        return 'Izin kamera ditolak. Izinkan kamera pada pengaturan browser, lalu coba lagi.';
+      }
+      if (err && (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError')) {
+        return 'Kamera tidak ditemukan pada perangkat.';
+      }
+      if (err && (err.name === 'NotReadableError' || err.name === 'TrackStartError')) {
+        return 'Kamera sedang dipakai aplikasi lain atau tidak dapat diakses.';
+      }
+      return 'Kamera gagal dibuka: ' + (err?.message || 'Kesalahan tidak diketahui.');
+    }
+
+    async function cekGuruUntukRegistrasi() {
+      if (state.busy) return;
+      const id = normalizeId($('daftarId').value);
+      const kode = String($('kodeRegistrasi').value || '').trim();
+
+      if (!id || !kode) {
+        showStatus('statusDaftar', 'warn', 'Isi ID guru dan kode registrasi.');
+        return;
+      }
+
+      setBusy(true);
+      showStatus('statusDaftar', 'info', 'Memeriksa data guru…');
+
+      try {
+        const res = await callApi('ENROLL_VALIDATE', { id, kode });
+        state.daftarValidated = true;
+        state.daftarNama = res.nama;
+        $('daftarId').value = id;
+        $('placeholderDaftar').innerHTML = 'Identitas valid.<br>Tekan tombol <b>Aktifkan Kamera</b>.';
+        $('badgeDaftar').textContent = 'Identitas valid';
+        showStatus('statusDaftar', 'ok', `Data ditemukan: ${res.nama}\nSilakan aktifkan kamera untuk merekam wajah.`);
+      } catch (err) {
+        state.daftarValidated = false;
+        state.daftarNama = '';
+        showStatus('statusDaftar', 'error', err.message);
+      } finally {
+        setBusy(false);
+        refreshButtons();
+      }
+    }
+
+    function resetValidasiDaftar() {
+      state.daftarValidated = false;
+      state.daftarNama = '';
+      stopCameraDaftar();
+      hideStatus('statusDaftar');
+    }
+
+    async function rekamWajah() {
+      if (state.busy) return;
+
+      const id = normalizeId($('daftarId').value);
+      const kode = String($('kodeRegistrasi').value || '').trim();
+
+      if (!state.daftarValidated || !id || !kode) {
+        showStatus('statusDaftar', 'warn', 'Validasi ID dan kode registrasi terlebih dahulu.');
+        return;
+      }
+      if (!state.streamDaftar) {
+        showStatus('statusDaftar', 'warn', 'Aktifkan kamera terlebih dahulu.');
+        return;
+      }
+
+      setBusy(true);
+
+      try {
+        showStatus('statusDaftar', 'info', 'Pemeriksaan kehadiran: kedipkan kedua mata sekali…');
+        $('badgeDaftar').textContent = 'Kedipkan mata';
+
+        await blinkChallenge($('videoDaftar'), (msg) => {
+          $('badgeDaftar').textContent = msg;
+        });
+
+        showStatus('statusDaftar', 'info', 'Kedipan terdeteksi. Mengambil 3 sampel wajah…');
+        $('badgeDaftar').textContent = 'Mengambil sampel';
+
+        const samples = [];
+        for (let i = 0; i < 3; i++) {
+          const descriptor = await captureDescriptor($('videoDaftar'));
+          samples.push(Array.from(descriptor));
+          $('badgeDaftar').textContent = `Sampel ${i + 1}/3`;
+          await sleep(450);
+        }
+
+        const quality = averagePairwiseDistance(samples);
+        if (quality > 0.45) {
+          throw new Error('Tiga sampel terlalu berbeda. Pastikan hanya satu orang di depan kamera dan pencahayaan stabil, lalu ulangi.');
+        }
+
+        const res = await callApi('ENROLL_SAVE', {
+          id,
+          kode,
+          descriptors: samples
+        });
+
+        showStatus('statusDaftar', 'ok', `Pendaftaran wajah berhasil untuk ${res.nama}.`);
+        $('badgeDaftar').textContent = 'Pendaftaran berhasil';
+        $('kodeRegistrasi').value = '';
+        stopCameraDaftar();
+        state.daftarValidated = false;
+        state.daftarNama = '';
+      } catch (err) {
+        console.error(err);
+        showStatus('statusDaftar', 'error', err.message);
+        $('badgeDaftar').textContent = 'Coba lagi';
+      } finally {
+        setBusy(false);
+        refreshButtons();
+      }
+    }
+
+    async function prosesAbsensi() {
+      if (state.busy) return;
+
+      const id = normalizeId($('absenId').value);
+      const jenis = $('jenisAbsen').value;
+
+      if (!id) {
+        showStatus('statusAbsen', 'warn', 'Masukkan ID guru.');
+        return;
+      }
+      if (!state.streamAbsen) {
+        showStatus('statusAbsen', 'warn', 'Aktifkan kamera terlebih dahulu.');
+        return;
+      }
+
+      setBusy(true);
+      hideResult();
+
+      try {
+        showStatus('statusAbsen', 'info', 'Kedipkan kedua mata sekali untuk melanjutkan…');
+        $('badgeAbsen').textContent = 'Kedipkan mata';
+
+        await blinkChallenge($('videoAbsen'), (msg) => {
+          $('badgeAbsen').textContent = msg;
+        });
+
+        showStatus('statusAbsen', 'info', 'Kedipan terdeteksi. Memverifikasi wajah…');
+        $('badgeAbsen').textContent = 'Memverifikasi';
+
+        const descriptor = await captureDescriptor($('videoAbsen'));
+
+        const res = await callApi('VERIFY_ATTENDANCE', {
+          id,
+          jenis,
+          descriptor: Array.from(descriptor)
+        });
+
+        $('absenId').value = id;
+        $('resultNama').textContent = res.nama;
+        $('resultMeta').textContent =
+          `${res.jenis} • ${res.tanggal} ${res.jam}` +
+          (typeof res.distance === 'number' ? ` • skor jarak ${res.distance.toFixed(4)}` : '');
+
+        $('resultAbsen').classList.add('show');
+
+        if (res.duplicate) {
+          showStatus('statusAbsen', 'warn', res.message);
+          $('badgeAbsen').textContent = 'Sudah tercatat';
+        } else {
+          showStatus('statusAbsen', 'ok', res.message);
+          $('badgeAbsen').textContent = 'Absensi berhasil';
+        }
+
+        await sleep(1000);
+        stopCameraAbsen();
+      } catch (err) {
+        console.error(err);
+        showStatus('statusAbsen', 'error', err.message);
+        $('badgeAbsen').textContent = 'Verifikasi gagal';
+      } finally {
+        setBusy(false);
+        refreshButtons();
+      }
+    }
+
+    async function captureDescriptor(videoEl) {
+      const options = new faceapi.TinyFaceDetectorOptions({
+        inputSize: 320,
+        scoreThreshold: 0.55
+      });
+
+      // Gunakan detectAllFaces supaya kondisi >1 wajah dapat ditolak.
+      const detections = await faceapi
+        .detectAllFaces(videoEl, options)
+        .withFaceLandmarks()
+        .withFaceDescriptors();
+
+      if (detections.length === 0) {
+        throw new Error('Wajah tidak terdeteksi. Dekatkan wajah, lihat kamera, dan perbaiki pencahayaan.');
+      }
+      if (detections.length > 1) {
+        throw new Error('Terdeteksi lebih dari satu wajah. Pastikan hanya satu orang di depan kamera.');
+      }
+
+      return detections[0].descriptor;
+    }
+
+    async function blinkChallenge(videoEl, onProgress) {
+      const options = new faceapi.TinyFaceDetectorOptions({
+        inputSize: 224,
+        scoreThreshold: 0.5
+      });
+
+      const deadline = Date.now() + 12000;
+      let closedSeen = false;
+      let faceSeenFrames = 0;
+
+      while (Date.now() < deadline) {
+        const detections = await faceapi
+          .detectAllFaces(videoEl, options)
+          .withFaceLandmarks();
+
+        if (detections.length > 1) {
+          throw new Error('Terdeteksi lebih dari satu wajah. Pastikan hanya satu orang di depan kamera.');
+        }
+
+        if (detections.length === 1) {
+          faceSeenFrames++;
+          const lm = detections[0].landmarks;
+          const leftEye = lm.getLeftEye();
+          const rightEye = lm.getRightEye();
+          const ear = (eyeAspectRatio(leftEye) + eyeAspectRatio(rightEye)) / 2;
+
+          if (!closedSeen) {
+            onProgress?.('Kedipkan mata');
+            if (ear < 0.20 && faceSeenFrames >= 2) {
+              closedSeen = true;
+              onProgress?.('Buka mata');
+            }
+          } else if (ear > 0.23) {
+            onProgress?.('Kedipan terdeteksi');
+            await sleep(250);
+            return true;
+          }
+        } else {
+          onProgress?.('Cari wajah…');
+        }
+
+        await sleep(110);
+      }
+
+      throw new Error('Kedipan belum terdeteksi. Pastikan wajah cukup terang dan kedipkan kedua mata dengan jelas, lalu coba lagi.');
+    }
+
+    function eyeAspectRatio(eye) {
+      // Urutan titik mata face-api mengikuti landmark 68 titik:
+      // p0-p5 di sekeliling mata.
+      if (!eye || eye.length < 6) return 1;
+
+      const A = pointDistance(eye[1], eye[5]);
+      const B = pointDistance(eye[2], eye[4]);
+      const C = pointDistance(eye[0], eye[3]);
+
+      if (!C) return 1;
+      return (A + B) / (2 * C);
+    }
+
+    function pointDistance(a, b) {
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function descriptorDistance(a, b) {
+      let sum = 0;
+      for (let i = 0; i < a.length; i++) {
+        const d = Number(a[i]) - Number(b[i]);
+        sum += d * d;
+      }
+      return Math.sqrt(sum);
+    }
+
+    function averagePairwiseDistance(samples) {
+      if (!samples || samples.length < 2) return 0;
+      let total = 0;
+      let count = 0;
+      for (let i = 0; i < samples.length; i++) {
+        for (let j = i + 1; j < samples.length; j++) {
+          total += descriptorDistance(samples[i], samples[j]);
+          count++;
+        }
+      }
+      return count ? total / count : 0;
+    }
+
+    function setBusy(value) {
+      state.busy = value;
+      refreshButtons();
+    }
+
+    function refreshButtons() {
+      $('btnCameraAbsen').disabled = state.busy || !state.modelsReady || !!state.streamAbsen;
+      $('btnStopAbsen').disabled = state.busy || !state.streamAbsen;
+      $('btnVerifikasi').disabled = state.busy || !state.modelsReady || !state.streamAbsen;
+
+      $('btnCekGuru').disabled = state.busy;
+      $('btnCameraDaftar').disabled = state.busy || !state.modelsReady || !state.daftarValidated || !!state.streamDaftar;
+      $('btnStopDaftar').disabled = state.busy || !state.streamDaftar;
+      $('btnRekamWajah').disabled = state.busy || !state.modelsReady || !state.daftarValidated || !state.streamDaftar;
+    }
+
+    function showStatus(id, type, message) {
+      const el = $(id);
+      el.className = `status show ${type}`;
+      el.textContent = message;
+    }
+
+    function hideStatus(id) {
+      const el = $(id);
+      el.className = 'status';
+      el.textContent = '';
+    }
+
+    function hideResult() {
+      $('resultAbsen').classList.remove('show');
+      $('resultNama').textContent = '';
+      $('resultMeta').textContent = '';
+    }
+  </script>
+</body>
+</html>
