@@ -189,18 +189,65 @@
       z-index: 1;
     }
 
-    .face-guide {
+    .scan-ring {
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 44%;
-      height: 68%;
+      width: min(62%, 300px);
+      aspect-ratio: 1 / 1;
       transform: translate(-50%, -50%);
-      border: 3px solid rgba(255,255,255,.84);
-      border-radius: 48% 48% 45% 45% / 40% 40% 55% 55%;
-      box-shadow: 0 0 0 999px rgba(0,0,0,.18);
       z-index: 2;
       pointer-events: none;
+    }
+
+    .scan-ring svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+      transform: rotate(-90deg);
+    }
+
+    .scan-ring circle {
+      fill: none;
+      stroke-width: 5;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .scan-ring-track {
+      stroke: rgba(203, 213, 225, .78);
+    }
+
+    .scan-ring-progress {
+      stroke: #75c9ff;
+      stroke-linecap: round;
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      transition: stroke-dashoffset .28s ease;
+      filter: drop-shadow(0 0 5px rgba(117, 201, 255, .32));
+    }
+
+    .scan-success {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      transform: scale(.72);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .scan-success.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .scan-success span {
+      color: #75c9ff;
+      font-size: clamp(46px, 9vw, 72px);
+      font-weight: 900;
+      line-height: 1;
+      text-shadow: 0 3px 14px rgba(0, 34, 70, .48);
     }
 
     .camera-badge {
@@ -305,7 +352,7 @@
       <div class="eyebrow">● Verifikasi wajah 1:1</div>
       <h1>Absensi Guru</h1>
       <p>Masukkan ID guru, lalu verifikasi wajah. Sistem tidak mengunduh database wajah ke browser; pencocokan dilakukan di backend terhadap ID yang diklaim.</p>
-      <div id="modelStatus" class="model-status">Memuat model pengenalan wajah…</div>
+      <div id="modelStatus" class="model-status">Memuat model wajah dan liveness…</div>
     </section>
 
     <nav class="tabs" aria-label="Menu">
@@ -334,7 +381,13 @@
       <div class="camera-box">
         <video id="videoAbsen" autoplay muted playsinline></video>
         <div id="placeholderAbsen" class="camera-placeholder">Kamera belum aktif.<br>Tekan tombol <b>Aktifkan Kamera</b>.</div>
-        <div class="face-guide"></div>
+        <div id="scanRingAbsen" class="scan-ring" aria-hidden="true">
+          <svg viewBox="0 0 200 200">
+            <circle class="scan-ring-track" cx="100" cy="100" r="88" pathLength="100"></circle>
+            <circle id="progressAbsen" class="scan-ring-progress" cx="100" cy="100" r="88" pathLength="100"></circle>
+          </svg>
+          <div id="successAbsen" class="scan-success"><span>✓</span></div>
+        </div>
         <div id="badgeAbsen" class="camera-badge">Siap</div>
       </div>
 
@@ -351,7 +404,7 @@
       </div>
 
       <div class="hint">
-        <b>Catatan:</b> versi ini memakai verifikasi 1:1. Guru mengisi ID lebih dulu, lalu backend hanya membandingkan wajah dengan template milik ID tersebut. Pemeriksaan kehadiran memakai kedipan adaptif dengan gerakan kepala sebagai cadangan; ini tetap bukan liveness anti-spoof tingkat keamanan tinggi.
+        <b>Catatan:</b> versi ini memakai verifikasi 1:1. Guru mengisi ID lebih dulu, lalu backend hanya membandingkan wajah dengan template milik ID tersebut. Pemeriksaan kehadiran mewajibkan kedipan dan gerakan kepala ke samping lalu kembali lurus; ini tetap bukan liveness anti-spoof tingkat keamanan tinggi.
       </div>
     </section>
 
@@ -379,7 +432,13 @@
       <div class="camera-box">
         <video id="videoDaftar" autoplay muted playsinline></video>
         <div id="placeholderDaftar" class="camera-placeholder">Verifikasi ID dan kode registrasi terlebih dahulu.</div>
-        <div class="face-guide"></div>
+        <div id="scanRingDaftar" class="scan-ring" aria-hidden="true">
+          <svg viewBox="0 0 200 200">
+            <circle class="scan-ring-track" cx="100" cy="100" r="88" pathLength="100"></circle>
+            <circle id="progressDaftar" class="scan-ring-progress" cx="100" cy="100" r="88" pathLength="100"></circle>
+          </svg>
+          <div id="successDaftar" class="scan-success"><span>✓</span></div>
+        </div>
         <div id="badgeDaftar" class="camera-badge">Belum diverifikasi</div>
       </div>
 
@@ -402,11 +461,20 @@
     // ============================================================
     const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzXW6qY-46YakrK2wGypx1BxO20ceIQ9ZcgrgvKTG867Xfbh5bYE8o4xy4BqCrHTH2v/exec';
 
-    // Model face-api.js dipin pada versi 0.22.2.
+    // face-api.js tetap dipakai hanya untuk membuat descriptor wajah.
     const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
+
+    // MediaPipe Face Landmarker dipakai untuk liveness real-time:
+    // kedipan + gerakan kepala ke samping + kembali lurus.
+    const MEDIAPIPE_VERSION = '0.10.35';
+    const MEDIAPIPE_MODULE_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/vision_bundle.mjs`;
+    const MEDIAPIPE_WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/wasm`;
+    const MEDIAPIPE_FACE_MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
 
     const state = {
       modelsReady: false,
+      faceLandmarker: null,
+      lastMediaPipeTimestamp: 0,
       streamAbsen: null,
       streamDaftar: null,
       daftarValidated: false,
@@ -442,7 +510,7 @@
 
     async function waitForFaceApiAndLoadModels() {
       try {
-        $('modelStatus').textContent = 'Memuat library face-api.js…';
+        $('modelStatus').textContent = 'Memuat face-api.js dan MediaPipe…';
 
         let attempts = 0;
         while (typeof window.faceapi === 'undefined' && attempts < 100) {
@@ -453,20 +521,63 @@
           throw new Error('Library face-api.js gagal dimuat. Periksa koneksi internet.');
         }
 
-        $('modelStatus').textContent = 'Memuat model deteksi dan pengenalan wajah…';
+        // Mulai unduh modul MediaPipe bersamaan dengan model face-api agar waktu tunggu lebih singkat.
+        const mediaPipeModulePromise = import(MEDIAPIPE_MODULE_URL);
+
+        $('modelStatus').textContent = 'Memuat model pengenalan wajah…';
         await Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
           faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
         ]);
 
+        $('modelStatus').textContent = 'Menyiapkan liveness MediaPipe…';
+        const visionModule = await mediaPipeModulePromise;
+        const vision = await visionModule.FilesetResolver.forVisionTasks(MEDIAPIPE_WASM_URL);
+
+        const baseOptions = {
+          modelAssetPath: MEDIAPIPE_FACE_MODEL_URL
+        };
+
+        const options = {
+          baseOptions,
+          runningMode: 'VIDEO',
+          numFaces: 2,
+          minFaceDetectionConfidence: 0.5,
+          minFacePresenceConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+          outputFaceBlendshapes: true
+        };
+
+        // Coba GPU terlebih dahulu. Jika perangkat/browser tidak mendukung, otomatis fallback CPU.
+        try {
+          state.faceLandmarker = await visionModule.FaceLandmarker.createFromOptions(
+            vision,
+            {
+              ...options,
+              baseOptions: {
+                ...baseOptions,
+                delegate: 'GPU'
+              }
+            }
+          );
+        } catch (gpuError) {
+          console.warn('MediaPipe GPU tidak tersedia, menggunakan CPU.', gpuError);
+          state.faceLandmarker = await visionModule.FaceLandmarker.createFromOptions(
+            vision,
+            options
+          );
+        }
+
         state.modelsReady = true;
-        $('modelStatus').textContent = 'Model wajah siap digunakan.';
+        $('modelStatus').textContent = 'Model wajah dan liveness siap digunakan.';
         refreshButtons();
       } catch (err) {
         console.error(err);
+        state.modelsReady = false;
+        state.faceLandmarker = null;
         $('modelStatus').textContent = 'Gagal memuat model: ' + err.message;
-        showStatus('statusAbsen', 'error', 'Model wajah gagal dimuat. Muat ulang halaman dan periksa koneksi internet.');
+        showStatus('statusAbsen', 'error', 'Model wajah/liveness gagal dimuat. Muat ulang halaman dan periksa koneksi internet.');
       }
     }
 
@@ -590,6 +701,7 @@
       }
       try {
         stopCameraAbsen();
+        resetScanProgress('absen');
         state.streamAbsen = await openCamera($('videoAbsen'));
         $('placeholderAbsen').style.display = 'none';
         $('badgeAbsen').textContent = 'Kamera aktif';
@@ -601,12 +713,13 @@
       refreshButtons();
     }
 
-    function stopCameraAbsen() {
+    function stopCameraAbsen(preserveProgress = false) {
       stopStream(state.streamAbsen);
       state.streamAbsen = null;
       $('videoAbsen').srcObject = null;
       $('placeholderAbsen').style.display = 'grid';
       $('badgeAbsen').textContent = 'Siap';
+      if (preserveProgress !== true) resetScanProgress('absen');
       refreshButtons();
     }
 
@@ -622,6 +735,7 @@
 
       try {
         stopCameraDaftar();
+        resetScanProgress('daftar');
         state.streamDaftar = await openCamera($('videoDaftar'));
         $('placeholderDaftar').style.display = 'none';
         $('badgeDaftar').textContent = 'Kamera aktif';
@@ -633,7 +747,7 @@
       refreshButtons();
     }
 
-    function stopCameraDaftar() {
+    function stopCameraDaftar(preserveProgress = false) {
       stopStream(state.streamDaftar);
       state.streamDaftar = null;
       $('videoDaftar').srcObject = null;
@@ -642,6 +756,7 @@
         ? 'Kamera belum aktif.<br>Tekan tombol <b>Aktifkan Kamera</b>.'
         : 'Verifikasi ID dan kode registrasi terlebih dahulu.';
       $('badgeDaftar').textContent = state.daftarValidated ? 'Identitas valid' : 'Belum diverifikasi';
+      if (preserveProgress !== true) resetScanProgress('daftar');
       refreshButtons();
     }
 
@@ -714,22 +829,26 @@
       setBusy(true);
 
       try {
-        showStatus('statusDaftar', 'info', 'Pemeriksaan kehadiran: tatap kamera dan ikuti petunjuk pada layar…');
-        $('badgeDaftar').textContent = 'Kalibrasi wajah';
+        resetScanProgress('daftar');
+        showStatus('statusDaftar', 'info', 'Pemeriksaan kehadiran: tatap kamera, kedipkan mata, lalu gerakkan kepala ke samping dan kembali lurus.');
+        $('badgeDaftar').textContent = 'Mencari wajah';
 
-        await blinkChallenge($('videoDaftar'), (msg) => {
+        await livenessChallenge($('videoDaftar'), (msg, progress) => {
           $('badgeDaftar').textContent = msg;
+          setScanProgress('daftar', progress);
         });
 
-        showStatus('statusDaftar', 'info', 'Pemeriksaan kehadiran berhasil. Mengambil 3 sampel wajah…');
+        showStatus('statusDaftar', 'info', 'Liveness berhasil. Mengambil 3 sampel wajah…');
         $('badgeDaftar').textContent = 'Mengambil sampel';
+        setScanProgress('daftar', 82);
 
         const samples = [];
         for (let i = 0; i < 3; i++) {
           const descriptor = await captureDescriptor($('videoDaftar'));
           samples.push(Array.from(descriptor));
           $('badgeDaftar').textContent = `Sampel ${i + 1}/3`;
-          await sleep(450);
+          setScanProgress('daftar', 86 + ((i + 1) * 3));
+          await sleep(300);
         }
 
         const quality = averagePairwiseDistance(samples);
@@ -737,16 +856,18 @@
           throw new Error('Tiga sampel terlalu berbeda. Pastikan hanya satu orang di depan kamera dan pencahayaan stabil, lalu ulangi.');
         }
 
+        setScanProgress('daftar', 96);
         const res = await callApi('ENROLL_SAVE', {
           id,
           kode,
           descriptors: samples
         });
 
+        setScanProgress('daftar', 100, true);
         showStatus('statusDaftar', 'ok', `Pendaftaran wajah berhasil untuk ${res.nama}.`);
         $('badgeDaftar').textContent = 'Pendaftaran berhasil';
         $('kodeRegistrasi').value = '';
-        stopCameraDaftar();
+        stopCameraDaftar(true);
         state.daftarValidated = false;
         state.daftarNama = '';
       } catch (err) {
@@ -778,17 +899,21 @@
       hideResult();
 
       try {
-        showStatus('statusAbsen', 'info', 'Tatap kamera dan ikuti petunjuk pemeriksaan kehadiran pada layar…');
-        $('badgeAbsen').textContent = 'Kalibrasi wajah';
+        resetScanProgress('absen');
+        showStatus('statusAbsen', 'info', 'Tatap kamera, kedipkan mata, lalu gerakkan kepala ke samping dan kembali lurus.');
+        $('badgeAbsen').textContent = 'Mencari wajah';
 
-        await blinkChallenge($('videoAbsen'), (msg) => {
+        await livenessChallenge($('videoAbsen'), (msg, progress) => {
           $('badgeAbsen').textContent = msg;
+          setScanProgress('absen', progress);
         });
 
-        showStatus('statusAbsen', 'info', 'Pemeriksaan kehadiran berhasil. Memverifikasi wajah…');
+        showStatus('statusAbsen', 'info', 'Liveness berhasil. Memverifikasi wajah…');
         $('badgeAbsen').textContent = 'Memverifikasi';
+        setScanProgress('absen', 86);
 
         const descriptor = await captureDescriptor($('videoAbsen'));
+        setScanProgress('absen', 93);
 
         const res = await callApi('VERIFY_ATTENDANCE', {
           id,
@@ -803,6 +928,7 @@
           (typeof res.distance === 'number' ? ` • skor jarak ${res.distance.toFixed(4)}` : '');
 
         $('resultAbsen').classList.add('show');
+        setScanProgress('absen', 100, true);
 
         if (res.duplicate) {
           showStatus('statusAbsen', 'warn', res.message);
@@ -813,7 +939,7 @@
         }
 
         await sleep(1000);
-        stopCameraAbsen();
+        stopCameraAbsen(true);
       } catch (err) {
         console.error(err);
         showStatus('statusAbsen', 'error', err.message);
@@ -846,178 +972,246 @@
       return detections[0].descriptor;
     }
 
-    async function blinkChallenge(videoEl, onProgress) {
-      // Revisi 002:
-      // 1) Kalibrasi EAR mata terbuka milik pengguna (tidak lagi memakai angka mutlak).
-      // 2) Kedipan diminta lebih perlahan agar lebih mudah tertangkap kamera HP.
-      // 3) Jika kedipan tidak tertangkap, otomatis beralih ke gerakan kepala sebagai fallback.
-      const options = new faceapi.TinyFaceDetectorOptions({
-        inputSize: 160,
-        scoreThreshold: 0.45
-      });
+    async function livenessChallenge(videoEl, onProgress) {
+      if (!state.faceLandmarker) {
+        throw new Error('MediaPipe Face Landmarker belum siap. Muat ulang halaman dan tunggu sampai model siap.');
+      }
 
-      const calibrationDeadline = Date.now() + 6500;
-      const earSamples = [];
-      const noseSamples = [];
+      // Tahap 0 — stabilisasi singkat untuk baseline mata terbuka dan posisi kepala lurus.
+      const calibrationDeadline = Date.now() + 4500;
+      const blinkSamples = [];
+      const headSamples = [];
+      let stableFrames = 0;
 
-      onProgress?.('Tatap kamera…');
+      onProgress?.('Tatap kamera', 4);
 
-      while (Date.now() < calibrationDeadline && earSamples.length < 5) {
-        const detections = await faceapi
-          .detectAllFaces(videoEl, options)
-          .withFaceLandmarks();
+      while (Date.now() < calibrationDeadline && stableFrames < 8) {
+        const result = getMediaPipeResult_(videoEl);
+        const faceCount = result.faceLandmarks?.length || 0;
 
-        if (detections.length > 1) {
+        if (faceCount > 1) {
           throw new Error('Terdeteksi lebih dari satu wajah. Pastikan hanya satu orang di depan kamera.');
         }
 
-        if (detections.length === 1) {
-          const detection = detections[0];
-          const lm = detection.landmarks;
-          const leftEye = lm.getLeftEye();
-          const rightEye = lm.getRightEye();
-          const ear = (eyeAspectRatio(leftEye) + eyeAspectRatio(rightEye)) / 2;
-          const noseOffset = normalizedNoseOffset_(detection);
+        if (faceCount === 1) {
+          const blinkLeft = getBlendshapeScore_(result, 'eyeBlinkLeft');
+          const blinkRight = getBlendshapeScore_(result, 'eyeBlinkRight');
+          const blinkAverage = (blinkLeft + blinkRight) / 2;
+          const headOffset = getHeadHorizontalOffset_(result);
 
-          if (Number.isFinite(ear) && ear > 0.08 && ear < 0.60) {
-            earSamples.push(ear);
-            noseSamples.push(noseOffset);
-            onProgress?.(`Kalibrasi mata ${earSamples.length}/5`);
+          if (Number.isFinite(blinkAverage) && Number.isFinite(headOffset)) {
+            blinkSamples.push(blinkAverage);
+            headSamples.push(headOffset);
+            stableFrames++;
+
+            const calibrationProgress = 4 + Math.round((stableFrames / 8) * 12);
+            onProgress?.(`Stabilkan wajah ${stableFrames}/8`, calibrationProgress);
           }
         } else {
-          onProgress?.('Posisikan wajah di tengah');
+          stableFrames = Math.max(0, stableFrames - 1);
+          onProgress?.('Posisikan wajah di dalam lingkaran', 4);
         }
 
-        await sleep(70);
+        await sleep(35);
       }
 
-      if (earSamples.length < 3) {
-        throw new Error('Posisi mata belum terbaca stabil. Hadapkan wajah lurus ke kamera dan pastikan hanya satu wajah terlihat.');
+      if (stableFrames < 5 || blinkSamples.length < 5 || headSamples.length < 5) {
+        throw new Error('Wajah belum terbaca stabil. Hadapkan wajah lurus ke kamera dan pastikan pencahayaan cukup.');
       }
 
-      // Ambil median bagian atas agar kedipan kecil saat kalibrasi tidak menurunkan baseline.
-      const sortedEar = [...earSamples].sort((a, b) => b - a);
-      const topEar = sortedEar.slice(0, Math.min(3, sortedEar.length));
-      const openEar = topEar.reduce((sum, value) => sum + value, 0) / topEar.length;
+      // Baseline blink menggunakan beberapa skor terendah agar kedipan kecil saat kalibrasi
+      // tidak membuat ambang terlalu tinggi.
+      const lowestBlink = [...blinkSamples].sort((a, b) => a - b).slice(0, 4);
+      const blinkBaseline = lowestBlink.reduce((sum, value) => sum + value, 0) / lowestBlink.length;
 
-      const closedThreshold = Math.max(0.12, openEar * 0.72);
-      const reopenThreshold = Math.max(closedThreshold + 0.015, openEar * 0.88);
+      const closedThreshold = clamp_(blinkBaseline + 0.38, 0.45, 0.72);
+      const openThreshold = clamp_(blinkBaseline + 0.18, 0.20, 0.38);
+      const headBaseline = median_(headSamples);
 
-      const validNose = noseSamples.filter(Number.isFinite);
-      const baselineNose = validNose.length
-        ? validNose.reduce((sum, value) => sum + value, 0) / validNose.length
-        : 0;
+      // Tahap 1 — KEDIP WAJIB.
+      const blinkDeadline = Date.now() + 9000;
+      let eyesClosed = false;
 
-      // Tahap 1: kedipan adaptif.
-      const blinkDeadline = Date.now() + 10000;
-      let closedSeen = false;
-
-      onProgress?.('Kedip perlahan ±1 detik');
+      onProgress?.('Kedipkan kedua mata', 20);
 
       while (Date.now() < blinkDeadline) {
-        const detections = await faceapi
-          .detectAllFaces(videoEl, options)
-          .withFaceLandmarks();
+        const result = getMediaPipeResult_(videoEl);
+        const faceCount = result.faceLandmarks?.length || 0;
 
-        if (detections.length > 1) {
+        if (faceCount > 1) {
           throw new Error('Terdeteksi lebih dari satu wajah. Pastikan hanya satu orang di depan kamera.');
         }
 
-        if (detections.length === 1) {
-          const lm = detections[0].landmarks;
-          const leftEye = lm.getLeftEye();
-          const rightEye = lm.getRightEye();
-          const ear = (eyeAspectRatio(leftEye) + eyeAspectRatio(rightEye)) / 2;
+        if (faceCount === 1) {
+          const blinkLeft = getBlendshapeScore_(result, 'eyeBlinkLeft');
+          const blinkRight = getBlendshapeScore_(result, 'eyeBlinkRight');
+          const blinkAverage = (blinkLeft + blinkRight) / 2;
+          const bothEyes = Math.min(blinkLeft, blinkRight);
 
-          if (!closedSeen) {
-            onProgress?.('Kedip perlahan ±1 detik');
-            if (ear <= closedThreshold) {
-              closedSeen = true;
-              onProgress?.('Mata tertutup — buka kembali');
+          if (!eyesClosed) {
+            onProgress?.('Kedipkan kedua mata', 24);
+
+            const bothEyesThreshold = Math.max(0.28, closedThreshold - 0.18);
+            if (blinkAverage >= closedThreshold && bothEyes >= bothEyesThreshold) {
+              eyesClosed = true;
+              onProgress?.('Kedipan terbaca — buka mata', 38);
             }
-          } else if (ear >= reopenThreshold) {
-            onProgress?.('Kedipan berhasil');
-            await sleep(220);
-            return true;
+          } else if (blinkAverage <= openThreshold) {
+            onProgress?.('Kedipan berhasil', 45);
+            await sleep(120);
+            break;
           }
         } else {
-          onProgress?.('Posisikan wajah di tengah');
+          onProgress?.('Wajah tidak terlihat', 20);
         }
 
-        await sleep(65);
+        await sleep(30);
       }
 
-      // Tahap 2: fallback gerakan kepala.
-      // Tidak meminta arah tertentu agar tampilan kamera yang dicerminkan tidak membingungkan pengguna.
-      const headDeadline = Date.now() + 12000;
-      let sideSeen = false;
+      if (!eyesClosed) {
+        throw new Error('Kedipan belum terdeteksi. Tatap kamera lalu kedipkan kedua mata dengan jelas.');
+      }
 
-      onProgress?.('Gerakkan kepala ke salah satu sisi');
+      // Pastikan mata benar-benar kembali terbuka sebelum lanjut.
+      let reopened = false;
+      const reopenDeadline = Date.now() + 2500;
+
+      while (Date.now() < reopenDeadline) {
+        const result = getMediaPipeResult_(videoEl);
+        const faceCount = result.faceLandmarks?.length || 0;
+
+        if (faceCount === 1) {
+          const blinkAverage = (
+            getBlendshapeScore_(result, 'eyeBlinkLeft') +
+            getBlendshapeScore_(result, 'eyeBlinkRight')
+          ) / 2;
+
+          if (blinkAverage <= openThreshold) {
+            reopened = true;
+            break;
+          }
+        }
+
+        await sleep(30);
+      }
+
+      if (!reopened) {
+        throw new Error('Kedipan terbaca, tetapi mata belum terbaca kembali terbuka. Lihat kamera dan coba lagi.');
+      }
+
+      // Tahap 2 — GERAK KEPALA KE SAMPING WAJIB, lalu kembali lurus.
+      const headDeadline = Date.now() + 11000;
+      let sideFrames = 0;
+      let sideReached = false;
+      let returnFrames = 0;
+
+      onProgress?.('Gerakkan kepala perlahan ke samping', 50);
 
       while (Date.now() < headDeadline) {
-        const detections = await faceapi
-          .detectAllFaces(videoEl, options)
-          .withFaceLandmarks();
+        const result = getMediaPipeResult_(videoEl);
+        const faceCount = result.faceLandmarks?.length || 0;
 
-        if (detections.length > 1) {
+        if (faceCount > 1) {
           throw new Error('Terdeteksi lebih dari satu wajah. Pastikan hanya satu orang di depan kamera.');
         }
 
-        if (detections.length === 1) {
-          const noseOffset = normalizedNoseOffset_(detections[0]);
-          const movement = Math.abs(noseOffset - baselineNose);
+        if (faceCount === 1) {
+          const headOffset = getHeadHorizontalOffset_(result);
+          const movement = Math.abs(headOffset - headBaseline);
 
-          if (!sideSeen) {
-            onProgress?.('Gerakkan kepala perlahan ke samping');
-            if (movement >= 0.065) {
-              sideSeen = true;
-              onProgress?.('Kembali hadap lurus');
+          if (!sideReached) {
+            if (movement >= 0.055) {
+              sideFrames++;
+              onProgress?.('Gerakan kepala terbaca', 60 + Math.min(sideFrames * 3, 8));
+
+              if (sideFrames >= 2) {
+                sideReached = true;
+                onProgress?.('Kembali hadap lurus', 70);
+              }
+            } else {
+              sideFrames = 0;
+              onProgress?.('Gerakkan kepala perlahan ke samping', 52);
             }
-          } else if (movement <= 0.035) {
-            onProgress?.('Gerakan kepala berhasil');
-            await sleep(220);
-            return true;
+          } else {
+            if (movement <= 0.028) {
+              returnFrames++;
+              onProgress?.('Kembali lurus', 74 + Math.min(returnFrames * 3, 6));
+
+              if (returnFrames >= 2) {
+                onProgress?.('Liveness berhasil', 80);
+                await sleep(120);
+                return true;
+              }
+            } else {
+              returnFrames = 0;
+              onProgress?.('Kembali hadap lurus', 72);
+            }
           }
         } else {
-          onProgress?.('Posisikan wajah di tengah');
+          onProgress?.('Posisikan wajah kembali', sideReached ? 70 : 50);
         }
 
-        await sleep(70);
+        await sleep(35);
       }
 
-      throw new Error('Pemeriksaan kehadiran belum terbaca. Tatap kamera, lalu kedip perlahan sekitar 1 detik. Jika diminta, gerakkan kepala ke samping dan kembali lurus.');
+      if (!sideReached) {
+        throw new Error('Gerakan kepala ke samping belum terdeteksi. Gerakkan kepala perlahan ke salah satu sisi, bukan hanya menggeser mata.');
+      }
+
+      throw new Error('Kepala sudah bergerak ke samping, tetapi belum terbaca kembali lurus. Hadapkan wajah lurus ke kamera lalu coba lagi.');
     }
 
-    function normalizedNoseOffset_(detection) {
-      const lm = detection.landmarks;
-      const nose = lm.getNose();
-      const box = detection.detection.box;
+    function getMediaPipeResult_(videoEl) {
+      let timestamp = performance.now();
 
-      if (!nose || nose.length < 4 || !box || !box.width) return 0;
+      // MediaPipe VIDEO mensyaratkan timestamp selalu meningkat.
+      if (timestamp <= state.lastMediaPipeTimestamp) {
+        timestamp = state.lastMediaPipeTimestamp + 0.01;
+      }
+      state.lastMediaPipeTimestamp = timestamp;
 
-      const noseTip = nose[3];
-      const boxCenterX = box.x + (box.width / 2);
-
-      return (noseTip.x - boxCenterX) / box.width;
+      return state.faceLandmarker.detectForVideo(videoEl, timestamp);
     }
 
-    function eyeAspectRatio(eye) {
-      // Urutan titik mata face-api mengikuti landmark 68 titik:
-      // p0-p5 di sekeliling mata.
-      if (!eye || eye.length < 6) return 1;
-
-      const A = pointDistance(eye[1], eye[5]);
-      const B = pointDistance(eye[2], eye[4]);
-      const C = pointDistance(eye[0], eye[3]);
-
-      if (!C) return 1;
-      return (A + B) / (2 * C);
+    function getBlendshapeScore_(result, categoryName) {
+      const categories = result.faceBlendshapes?.[0]?.categories || [];
+      const found = categories.find(item =>
+        item.categoryName === categoryName || item.displayName === categoryName
+      );
+      return found ? Number(found.score) || 0 : 0;
     }
 
-    function pointDistance(a, b) {
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-      return Math.sqrt(dx * dx + dy * dy);
+    function getHeadHorizontalOffset_(result) {
+      const landmarks = result.faceLandmarks?.[0];
+
+      // Indeks standar MediaPipe Face Mesh:
+      // 1 = ujung hidung, 234 dan 454 = sisi kiri/kanan wajah.
+      if (!landmarks || landmarks.length <= 454) return NaN;
+
+      const nose = landmarks[1];
+      const sideA = landmarks[234];
+      const sideB = landmarks[454];
+
+      if (!nose || !sideA || !sideB) return NaN;
+
+      const faceWidth = Math.abs(sideB.x - sideA.x);
+      if (faceWidth < 0.02) return NaN;
+
+      const faceCenterX = (sideA.x + sideB.x) / 2;
+      return (nose.x - faceCenterX) / faceWidth;
+    }
+
+    function median_(values) {
+      if (!values || !values.length) return 0;
+      const sorted = [...values].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      return sorted.length % 2
+        ? sorted[mid]
+        : (sorted[mid - 1] + sorted[mid]) / 2;
+    }
+
+    function clamp_(value, min, max) {
+      return Math.min(max, Math.max(min, value));
     }
 
     function descriptorDistance(a, b) {
@@ -1040,6 +1234,22 @@
         }
       }
       return count ? total / count : 0;
+    }
+
+    function setScanProgress(type, value, success = false) {
+      const suffix = type === 'daftar' ? 'Daftar' : 'Absen';
+      const circle = $(`progress${suffix}`);
+      const successEl = $(`success${suffix}`);
+
+      if (!circle || !successEl) return;
+
+      const progress = clamp_(Number(value) || 0, 0, 100);
+      circle.style.strokeDashoffset = String(100 - progress);
+      successEl.classList.toggle('show', success === true && progress >= 100);
+    }
+
+    function resetScanProgress(type) {
+      setScanProgress(type, 0, false);
     }
 
     function setBusy(value) {
