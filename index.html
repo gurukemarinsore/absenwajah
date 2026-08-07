@@ -3,85 +3,108 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#ffffff" />
-  <title>Absensi Guru - Verifikasi Wajah</title>
+  <meta name="theme-color" content="#f5f7fb" />
+  <title>Absensi Guru - Face Detection V4</title>
 
-  <!-- face-api.js 0.22.2, dipin agar versi tidak berubah mendadak -->
+  <!-- Face descriptor -->
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+  <!-- QR scanner -->
+  <script defer src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
   <style>
     :root {
       --bg: #f5f7fb;
       --card: #ffffff;
-      --text: #162033;
-      --muted: #68758b;
-      --border: #dfe5ee;
+      --text: #142033;
+      --muted: #66758d;
+      --border: #dfe6ef;
       --primary: #2155cd;
       --primary-dark: #173f9f;
+      --soft-blue: #74c9ff;
+      --soft-blue-2: #bde8ff;
+      --track: #aebccc;
       --ok: #117a4b;
-      --warn: #9a6400;
+      --warn: #986300;
       --danger: #b42318;
-      --shadow: 0 12px 36px rgba(20, 38, 70, .10);
+      --shadow: 0 14px 42px rgba(20, 38, 70, .10);
       --radius: 20px;
     }
 
     * { box-sizing: border-box; }
+
+    html { background: var(--bg); }
+
     body {
       margin: 0;
+      min-height: 100vh;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
     }
 
+    button, input, select { font: inherit; }
+
     .app {
-      width: min(760px, 100%);
+      width: min(1040px, calc(100% - 28px));
       margin: 0 auto;
-      padding: 18px 14px 48px;
+      padding: 20px 0 24px;
+    }
+
+    .hero,
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
 
     .hero {
-      background: linear-gradient(135deg, #ffffff 0%, #eef4ff 100%);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 22px;
-      box-shadow: var(--shadow);
+      padding: 24px 28px;
       margin-bottom: 14px;
+      background: linear-gradient(135deg, #ffffff 0%, #eef5ff 100%);
     }
 
     .eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--primary);
-      background: #eaf1ff;
-      border-radius: 999px;
       padding: 7px 11px;
+      border-radius: 999px;
+      background: #eaf1ff;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 800;
       margin-bottom: 12px;
     }
 
     h1 {
-      margin: 0 0 8px;
-      font-size: clamp(25px, 5vw, 38px);
-      letter-spacing: -.03em;
+      margin: 0 0 7px;
+      font-size: clamp(27px, 4vw, 40px);
+      letter-spacing: -.035em;
     }
 
     .hero p {
       margin: 0;
-      line-height: 1.55;
+      max-width: 780px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .model-status {
+      margin-top: 10px;
+      font-size: 12px;
       color: var(--muted);
     }
 
     .tabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      background: #e9edf4;
-      border-radius: 16px;
+      gap: 7px;
       padding: 6px;
       margin-bottom: 14px;
+      border-radius: 16px;
+      background: #e9edf4;
     }
 
     .tab {
@@ -90,9 +113,8 @@
       border-radius: 12px;
       background: transparent;
       color: var(--muted);
-      font: inherit;
-      font-weight: 800;
-      padding: 12px 10px;
+      padding: 12px 14px;
+      font-weight: 850;
       cursor: pointer;
     }
 
@@ -104,164 +126,161 @@
 
     .panel {
       display: none;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
-      box-shadow: var(--shadow);
+      padding: 26px 30px;
     }
 
     .panel.active { display: block; }
 
+    .vertical-flow {
+      width: min(820px, 100%);
+      margin: 0 auto;
+    }
+
     .section-title {
-      margin: 0 0 4px;
-      font-size: 20px;
+      margin: 0 0 5px;
+      font-size: 22px;
+      letter-spacing: -.015em;
     }
 
     .section-desc {
-      margin: 0 0 16px;
+      margin: 0 0 18px;
       color: var(--muted);
-      line-height: 1.5;
+      line-height: 1.55;
       font-size: 14px;
     }
 
-    .grid {
+    .stepbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 13px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .step-number {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: #e5eaf1;
+      color: #536176;
+    }
+
+    .step.active {
+      border-color: #b7d4ff;
+      background: #eef5ff;
+      color: var(--primary);
+    }
+
+    .step.active .step-number {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .step.done {
+      border-color: #bce9ce;
+      background: #f0fff6;
+      color: var(--ok);
+    }
+
+    .step.done .step-number {
+      background: var(--ok);
+      color: #fff;
+    }
+
+    .attendance-type-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .segmented {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      max-width: 430px;
+      padding: 5px;
+      margin-bottom: 16px;
+      border-radius: 15px;
+      background: #e9edf4;
+    }
+
+    .segment-slider {
+      position: absolute;
+      left: 5px;
+      top: 5px;
+      bottom: 5px;
+      width: calc(50% - 5px);
+      border-radius: 11px;
+      background: #fff;
+      box-shadow: 0 3px 12px rgba(20, 38, 70, .10);
+      transition: transform .2s ease;
+      pointer-events: none;
+    }
+
+    .segmented[data-value="PULANG"] .segment-slider {
+      transform: translateX(100%);
+    }
+
+    .segment-btn {
+      position: relative;
+      z-index: 1;
+      appearance: none;
+      border: 0;
+      background: transparent;
+      padding: 10px 14px;
+      border-radius: 11px;
+      color: var(--muted);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .segment-btn.active { color: var(--primary); }
+    .segment-btn:disabled { cursor: not-allowed; opacity: .55; }
+
+    .field-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
 
-    @media (max-width: 620px) {
-      .grid { grid-template-columns: 1fr; }
-    }
-
     .field label {
       display: block;
+      margin-bottom: 7px;
       font-size: 13px;
-      font-weight: 800;
-      margin: 0 0 7px;
+      font-weight: 850;
     }
 
-    .field input, .field select {
+    .field input,
+    .field select {
       width: 100%;
+      padding: 12px 13px;
       border: 1px solid var(--border);
       border-radius: 13px;
-      padding: 12px 13px;
-      font: inherit;
-      color: var(--text);
       background: #fff;
+      color: var(--text);
       outline: none;
     }
 
-    .field input:focus, .field select:focus {
+    .field input:focus,
+    .field select:focus {
       border-color: #8aa9f4;
       box-shadow: 0 0 0 4px rgba(33, 85, 205, .10);
-    }
-
-    .camera-box {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      margin: 16px 0 12px;
-      border-radius: 18px;
-      overflow: hidden;
-      background: #101828;
-      border: 1px solid #293348;
-    }
-
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform: scaleX(-1);
-    }
-
-    .camera-placeholder {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      text-align: center;
-      color: #cbd5e1;
-      line-height: 1.5;
-      background: radial-gradient(circle at center, #243147, #101828 70%);
-      z-index: 1;
-    }
-
-    .scan-ring {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: min(62%, 300px);
-      aspect-ratio: 1 / 1;
-      transform: translate(-50%, -50%);
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    .scan-ring svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-      overflow: visible;
-      transform: rotate(-90deg);
-    }
-
-    .scan-ring circle {
-      fill: none;
-      stroke-width: 5;
-      vector-effect: non-scaling-stroke;
-    }
-
-    .scan-ring-track {
-      stroke: rgba(203, 213, 225, .78);
-    }
-
-    .scan-ring-progress {
-      stroke: #75c9ff;
-      stroke-linecap: round;
-      stroke-dasharray: 100;
-      stroke-dashoffset: 100;
-      transition: stroke-dashoffset .28s ease;
-      filter: drop-shadow(0 0 5px rgba(117, 201, 255, .32));
-    }
-
-    .scan-success {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      opacity: 0;
-      transform: scale(.72);
-      transition: opacity .18s ease, transform .18s ease;
-    }
-
-    .scan-success.show {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    .scan-success span {
-      color: #75c9ff;
-      font-size: clamp(46px, 9vw, 72px);
-      font-weight: 900;
-      line-height: 1;
-      text-shadow: 0 3px 14px rgba(0, 34, 70, .48);
-    }
-
-    .camera-badge {
-      position: absolute;
-      left: 12px;
-      bottom: 12px;
-      z-index: 3;
-      background: rgba(10, 20, 35, .78);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 999px;
-      font-size: 12px;
-      padding: 7px 10px;
-      backdrop-filter: blur(8px);
     }
 
     .actions {
@@ -275,29 +294,221 @@
       appearance: none;
       border: 0;
       border-radius: 13px;
-      padding: 12px 16px;
-      font: inherit;
-      font-weight: 800;
+      padding: 12px 17px;
+      font-weight: 850;
       cursor: pointer;
-      transition: transform .08s ease, opacity .2s ease;
+      transition: transform .08s ease, opacity .2s ease, background .2s ease;
     }
 
     button.action:active { transform: translateY(1px); }
-    button.action:disabled { cursor: not-allowed; opacity: .55; }
+    button.action:disabled { cursor: not-allowed; opacity: .52; }
 
     .primary { background: var(--primary); color: #fff; }
-    .primary:hover { background: var(--primary-dark); }
+    .primary:hover:not(:disabled) { background: var(--primary-dark); }
     .secondary { background: #edf2f8; color: #25344c; }
     .danger { background: #fff0ee; color: var(--danger); }
 
+    .main-action {
+      min-width: 190px;
+      min-height: 48px;
+    }
+
+    .scan-instruction {
+      margin: 18px 0 9px;
+      text-align: center;
+      min-height: 46px;
+    }
+
+    .scan-instruction strong {
+      display: block;
+      font-size: 17px;
+      margin-bottom: 3px;
+    }
+
+    .scan-instruction span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .camera-box {
+      position: relative;
+      width: min(660px, 100%);
+      aspect-ratio: 4 / 3;
+      margin: 0 auto;
+      overflow: hidden;
+      border-radius: 20px;
+      border: 1px solid #28364d;
+      background: radial-gradient(circle at center, #26364e 0%, #142033 72%);
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    video.mirror { transform: scaleX(-1); }
+
+    .camera-off {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #8492a8;
+      font-size: 14px;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .mode-label {
+      position: absolute;
+      left: 13px;
+      bottom: 13px;
+      z-index: 5;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(10, 20, 35, .80);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.16);
+      font-size: 12px;
+      font-weight: 750;
+      backdrop-filter: blur(8px);
+    }
+
+    /* QR guide: hanya tampil saat mode QR. */
+    .qr-guide {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(58%, 300px);
+      aspect-ratio: 1 / 1;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      display: none;
+      pointer-events: none;
+    }
+
+    .qr-guide.show { display: block; }
+
+    .qr-guide::before,
+    .qr-guide::after,
+    .qr-guide-inner::before,
+    .qr-guide-inner::after {
+      content: "";
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-color: #8dd6ff;
+      border-style: solid;
+    }
+
+    .qr-guide::before {
+      left: 0; top: 0;
+      border-width: 4px 0 0 4px;
+      border-radius: 11px 0 0 0;
+    }
+
+    .qr-guide::after {
+      right: 0; top: 0;
+      border-width: 4px 4px 0 0;
+      border-radius: 0 11px 0 0;
+    }
+
+    .qr-guide-inner::before {
+      left: 0; bottom: 0;
+      border-width: 0 0 4px 4px;
+      border-radius: 0 0 0 11px;
+    }
+
+    .qr-guide-inner::after {
+      right: 0; bottom: 0;
+      border-width: 0 4px 4px 0;
+      border-radius: 0 0 11px 0;
+    }
+
+    /* Circular progress ring:
+       - track abu-abu selalu satu lingkaran penuh
+       - progress biru hanya garis luar
+       - bagian tengah selalu transparan
+       - titik mulai tepat jam 12
+    */
+    .scan-ring {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(60%, 310px);
+      aspect-ratio: 1 / 1;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      display: none;
+      pointer-events: none;
+    }
+
+    .scan-ring.show { display: block; }
+
+    .scan-ring svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+    }
+
+    .scan-ring circle {
+      fill: none;
+      stroke-width: 5;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .scan-ring-track {
+      stroke: var(--track);
+      opacity: .88;
+    }
+
+    .scan-ring-progress {
+      stroke: var(--soft-blue);
+      stroke-linecap: round;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dashoffset .18s linear, opacity .12s ease;
+      filter: drop-shadow(0 0 5px rgba(116, 201, 255, .30));
+      opacity: 0;
+    }
+
+    .scan-success {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      transform: scale(.76);
+      transition: opacity .16s ease, transform .16s ease;
+    }
+
+    .scan-success.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .scan-success span {
+      color: var(--soft-blue);
+      font-size: clamp(48px, 8vw, 72px);
+      line-height: 1;
+      font-weight: 950;
+      text-shadow: 0 3px 13px rgba(0, 35, 70, .42);
+    }
+
     .status {
       display: none;
-      margin-top: 14px;
-      padding: 13px 14px;
+      margin: 14px auto 0;
+      width: min(660px, 100%);
+      padding: 12px 14px;
       border-radius: 14px;
       border: 1px solid var(--border);
-      line-height: 1.5;
       font-size: 14px;
+      line-height: 1.5;
       white-space: pre-line;
     }
 
@@ -307,21 +518,84 @@
     .status.warn { background: #fff8e8; border-color: #f3d98f; color: var(--warn); }
     .status.error { background: #fff1f0; border-color: #f2c4bf; color: var(--danger); }
 
-    .result-card {
+    .qr-result {
       display: none;
-      margin-top: 14px;
-      border: 1px solid #b7ebcc;
-      background: #f2fff7;
-      border-radius: 16px;
-      padding: 16px;
+      margin: 14px auto 0;
+      width: min(660px, 100%);
+      padding: 14px 16px;
+      border: 1px solid #cfe0fb;
+      border-radius: 15px;
+      background: #f4f8ff;
     }
 
-    .result-card.show { display: block; }
-    .result-name { font-size: 22px; font-weight: 900; margin-bottom: 3px; }
-    .result-meta { color: #496558; line-height: 1.5; }
+    .qr-result.show { display: block; }
+
+    .qr-result small {
+      display: block;
+      color: var(--muted);
+      font-weight: 750;
+      margin-bottom: 3px;
+    }
+
+    .qr-result strong {
+      display: block;
+      color: var(--primary);
+      font-size: 19px;
+    }
+
+    .result-card {
+      display: none;
+      margin: 16px auto 0;
+      width: min(660px, 100%);
+      border: 1px solid #b7ebcc;
+      background: #f2fff7;
+      border-radius: 17px;
+      padding: 15px;
+    }
+
+    .result-card.show {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .result-photo {
+      width: 92px;
+      height: 92px;
+      flex: 0 0 92px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 2px solid #c7ecd6;
+      background: #e9eef5;
+    }
+
+    .result-copy { min-width: 0; }
+
+    .result-label {
+      color: var(--ok);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .result-name {
+      font-size: 21px;
+      font-weight: 950;
+      line-height: 1.2;
+      margin-bottom: 5px;
+      overflow-wrap: anywhere;
+    }
+
+    .result-meta {
+      color: #496558;
+      font-size: 14px;
+      line-height: 1.5;
+    }
 
     .hint {
-      margin-top: 14px;
+      margin-top: 16px;
       padding: 12px 13px;
       border-radius: 14px;
       background: #f8fafc;
@@ -331,17 +605,78 @@
       line-height: 1.55;
     }
 
-    .model-status {
-      margin-top: 12px;
-      color: var(--muted);
-      font-size: 12px;
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 19px 0;
     }
 
     code.inline {
-      background: #eef1f5;
       padding: 2px 6px;
       border-radius: 6px;
+      background: #eef1f5;
       font-size: .92em;
+    }
+
+    footer {
+      padding: 19px 10px 2px;
+      text-align: center;
+      color: #7a8799;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    @media (min-width: 900px) {
+      .hero { padding: 27px 34px; }
+      .panel { padding: 30px 38px; }
+      .camera-box { min-height: 470px; }
+      .section-title { font-size: 24px; }
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        width: min(100% - 18px, 1040px);
+        padding-top: 10px;
+      }
+
+      .hero,
+      .panel {
+        border-radius: 17px;
+      }
+
+      .hero { padding: 19px 17px; }
+      .panel { padding: 19px 15px; }
+
+      .field-grid { grid-template-columns: 1fr; }
+      .stepbar { grid-template-columns: 1fr; }
+
+      .camera-box {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        border-radius: 17px;
+      }
+
+      .scan-ring { width: min(64%, 285px); }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      button.action { width: 100%; }
+
+      .result-card.show {
+        align-items: flex-start;
+      }
+
+      .result-photo {
+        width: 78px;
+        height: 78px;
+        flex-basis: 78px;
+        border-radius: 14px;
+      }
+
+      .result-name { font-size: 18px; }
     }
   </style>
 </head>
@@ -349,123 +684,163 @@
 <body>
   <main class="app">
     <section class="hero">
-      <div class="eyebrow">● Verifikasi wajah 1:1</div>
+      <div class="eyebrow">● QR ID + Face Verification</div>
       <h1>Absensi Guru</h1>
-      <p>Masukkan ID guru, lalu verifikasi wajah. Sistem tidak mengunduh database wajah ke browser; pencocokan dilakukan di backend terhadap ID yang diklaim.</p>
-      <div id="modelStatus" class="model-status">Memuat model wajah dan liveness…</div>
+      <p>Scan QR ID untuk mengenali identitas, lalu lakukan verifikasi wajah dengan kedipan dan gerakan kepala. Descriptor wajah tetap dicocokkan di backend.</p>
+      <div id="modelStatus" class="model-status">Memuat komponen aplikasi…</div>
     </section>
 
-    <nav class="tabs" aria-label="Menu">
+    <nav class="tabs" aria-label="Menu aplikasi">
       <button class="tab active" data-tab="absen">Absensi</button>
       <button class="tab" data-tab="daftar">Daftar / Rekam Wajah</button>
     </nav>
 
+    <!-- =======================================================
+         ABSENSI
+         ======================================================= -->
     <section id="panel-absen" class="panel active">
-      <h2 class="section-title">Scan Absensi</h2>
-      <p class="section-desc">Pilih jenis absensi, aktifkan kamera, lalu ikuti petunjuk pemeriksaan kehadiran pada layar.</p>
+      <div class="vertical-flow">
+        <h2 class="section-title">Absensi dengan QR ID & Wajah</h2>
+        <p class="section-desc">Pilih MASUK atau PULANG. Scan QR ID terlebih dahulu; setelah QR valid, kamera akan beralih ke verifikasi wajah.</p>
 
-      <div class="grid">
-        <div class="field">
-          <label for="absenId">ID Guru</label>
-          <input id="absenId" autocomplete="off" placeholder="Contoh: GURU001" />
+        <div class="stepbar">
+          <div id="stepQr" class="step active">
+            <span class="step-number">1</span>
+            <span>Scan QR ID</span>
+          </div>
+          <div id="stepFace" class="step">
+            <span class="step-number">2</span>
+            <span>Verifikasi Wajah</span>
+          </div>
         </div>
-        <div class="field">
-          <label for="jenisAbsen">Jenis Absensi</label>
-          <select id="jenisAbsen">
-            <option value="MASUK">Masuk</option>
-            <option value="PULANG">Pulang</option>
-          </select>
+
+        <span class="attendance-type-label">Jenis Absensi</span>
+        <div id="attendanceSegment" class="segmented" data-value="MASUK">
+          <span class="segment-slider"></span>
+          <button id="segmentMasuk" class="segment-btn active" data-value="MASUK">MASUK</button>
+          <button id="segmentPulang" class="segment-btn" data-value="PULANG">PULANG</button>
         </div>
-      </div>
 
-      <div class="camera-box">
-        <video id="videoAbsen" autoplay muted playsinline></video>
-        <div id="placeholderAbsen" class="camera-placeholder">Kamera belum aktif.<br>Tekan tombol <b>Aktifkan Kamera</b>.</div>
-        <div id="scanRingAbsen" class="scan-ring" aria-hidden="true">
-          <svg viewBox="0 0 200 200">
-            <circle class="scan-ring-track" cx="100" cy="100" r="88" pathLength="100"></circle>
-            <circle id="progressAbsen" class="scan-ring-progress" cx="100" cy="100" r="88" pathLength="100"></circle>
-          </svg>
-          <div id="successAbsen" class="scan-success"><span>✓</span></div>
+        <div class="actions">
+          <button id="btnScanQr" class="action primary main-action">Scan QR ID</button>
+          <button id="btnBatalAbsen" class="action danger" disabled>Batalkan</button>
         </div>
-        <div id="badgeAbsen" class="camera-badge">Siap</div>
-      </div>
 
-      <div class="actions">
-        <button id="btnCameraAbsen" class="action secondary">Aktifkan Kamera</button>
-        <button id="btnVerifikasi" class="action primary" disabled>Verifikasi & Catat</button>
-        <button id="btnStopAbsen" class="action danger" disabled>Matikan Kamera</button>
-      </div>
+        <div id="qrResult" class="qr-result">
+          <small>QR ID dikenali</small>
+          <strong id="qrNama"></strong>
+        </div>
 
-      <div id="statusAbsen" class="status"></div>
-      <div id="resultAbsen" class="result-card">
-        <div id="resultNama" class="result-name"></div>
-        <div id="resultMeta" class="result-meta"></div>
-      </div>
+        <div class="scan-instruction">
+          <strong id="instructionTitle">Siap melakukan absensi</strong>
+          <span id="instructionDetail">Pilih jenis absensi, lalu tekan tombol Scan QR ID.</span>
+        </div>
 
-      <div class="hint">
-        <b>Catatan:</b> versi ini memakai verifikasi 1:1. Guru mengisi ID lebih dulu, lalu backend hanya membandingkan wajah dengan template milik ID tersebut. Pemeriksaan kehadiran mewajibkan kedipan dan gerakan kepala ke samping lalu kembali lurus; ini tetap bukan liveness anti-spoof tingkat keamanan tinggi.
+        <div class="camera-box">
+          <video id="videoAbsen" autoplay muted playsinline></video>
+          <div id="cameraOffAbsen" class="camera-off">Kamera belum aktif</div>
+
+          <div id="qrGuide" class="qr-guide" aria-hidden="true">
+            <div class="qr-guide-inner"></div>
+          </div>
+
+          <div id="scanRingAbsen" class="scan-ring" aria-hidden="true">
+            <svg viewBox="0 0 200 200">
+              <circle class="scan-ring-track" cx="100" cy="100" r="88"></circle>
+              <circle id="progressAbsen" class="scan-ring-progress" cx="100" cy="100" r="88"></circle>
+            </svg>
+            <div id="successAbsen" class="scan-success"><span>✓</span></div>
+          </div>
+
+          <div id="modeAbsen" class="mode-label">Siap</div>
+        </div>
+
+        <div id="statusAbsen" class="status"></div>
+
+        <div id="resultAbsen" class="result-card">
+          <img id="resultPhoto" class="result-photo" alt="Foto hasil verifikasi wajah" />
+          <div class="result-copy">
+            <div class="result-label">Wajah cocok</div>
+            <div id="resultNama" class="result-name"></div>
+            <div id="resultMeta" class="result-meta"></div>
+          </div>
+        </div>
+
+        <div class="hint">
+          <b>Keamanan:</b> QR hanya berisi token acak. Scanner QR biasa hanya melihat deretan karakter token. Nama guru baru ditentukan oleh backend, kemudian wajah diverifikasi terhadap identitas tersebut. Liveness wajib: kedip → gerak kepala ke arah yang diminta → kembali lurus.
+        </div>
       </div>
     </section>
 
+    <!-- =======================================================
+         ENROLLMENT
+         ======================================================= -->
     <section id="panel-daftar" class="panel">
-      <h2 class="section-title">Pendaftaran Wajah</h2>
-      <p class="section-desc">Admin harus lebih dulu menambahkan ID, nama, dan kode registrasi pada sheet <code class="inline">Data_Guru</code>.</p>
+      <div class="vertical-flow">
+        <h2 class="section-title">Pendaftaran Wajah</h2>
+        <p class="section-desc">Admin terlebih dahulu menambahkan ID, nama, dan kode registrasi pada sheet <code class="inline">Data_Guru</code>.</p>
 
-      <div class="grid">
-        <div class="field">
-          <label for="daftarId">ID Guru</label>
-          <input id="daftarId" autocomplete="off" placeholder="Contoh: GURU001" />
+        <div class="field-grid">
+          <div class="field">
+            <label for="daftarId">ID Guru</label>
+            <input id="daftarId" autocomplete="off" placeholder="Contoh: GURU001" />
+          </div>
+          <div class="field">
+            <label for="kodeRegistrasi">Kode Registrasi</label>
+            <input id="kodeRegistrasi" type="password" inputmode="numeric" autocomplete="one-time-code" placeholder="Kode dari admin" />
+          </div>
         </div>
-        <div class="field">
-          <label for="kodeRegistrasi">Kode Registrasi</label>
-          <input id="kodeRegistrasi" type="password" inputmode="numeric" autocomplete="one-time-code" placeholder="Kode dari admin" />
+
+        <div class="actions">
+          <button id="btnCekGuru" class="action secondary">Cek Data Guru</button>
         </div>
-      </div>
 
-      <div class="actions">
-        <button id="btnCekGuru" class="action secondary">Cek Data Guru</button>
-      </div>
+        <div id="statusDaftar" class="status"></div>
 
-      <div id="statusDaftar" class="status"></div>
-
-      <div class="camera-box">
-        <video id="videoDaftar" autoplay muted playsinline></video>
-        <div id="placeholderDaftar" class="camera-placeholder">Verifikasi ID dan kode registrasi terlebih dahulu.</div>
-        <div id="scanRingDaftar" class="scan-ring" aria-hidden="true">
-          <svg viewBox="0 0 200 200">
-            <circle class="scan-ring-track" cx="100" cy="100" r="88" pathLength="100"></circle>
-            <circle id="progressDaftar" class="scan-ring-progress" cx="100" cy="100" r="88" pathLength="100"></circle>
-          </svg>
-          <div id="successDaftar" class="scan-success"><span>✓</span></div>
+        <div class="scan-instruction">
+          <strong id="instructionDaftarTitle">Verifikasi data guru terlebih dahulu</strong>
+          <span id="instructionDaftarDetail">Setelah identitas valid, aktifkan kamera dan ikuti petunjuk liveness.</span>
         </div>
-        <div id="badgeDaftar" class="camera-badge">Belum diverifikasi</div>
-      </div>
 
-      <div class="actions">
-        <button id="btnCameraDaftar" class="action secondary" disabled>Aktifkan Kamera</button>
-        <button id="btnRekamWajah" class="action primary" disabled>Rekam 3 Sampel Wajah</button>
-        <button id="btnStopDaftar" class="action danger" disabled>Matikan Kamera</button>
-      </div>
+        <div class="camera-box">
+          <video id="videoDaftar" class="mirror" autoplay muted playsinline></video>
+          <div id="cameraOffDaftar" class="camera-off">Kamera belum aktif</div>
 
-      <div class="hint">
-        Saat pendaftaran, gunakan pencahayaan cukup, wajah menghadap kamera, dan jangan memakai masker/kacamata hitam. Tiga sampel descriptor disimpan agar pencocokan lebih stabil.
+          <div id="scanRingDaftar" class="scan-ring show" aria-hidden="true">
+            <svg viewBox="0 0 200 200">
+              <circle class="scan-ring-track" cx="100" cy="100" r="88"></circle>
+              <circle id="progressDaftar" class="scan-ring-progress" cx="100" cy="100" r="88"></circle>
+            </svg>
+            <div id="successDaftar" class="scan-success"><span>✓</span></div>
+          </div>
+
+          <div id="modeDaftar" class="mode-label">Belum diverifikasi</div>
+        </div>
+
+        <div class="actions">
+          <button id="btnCameraDaftar" class="action secondary" disabled>Aktifkan Kamera</button>
+          <button id="btnRekamWajah" class="action primary" disabled>Rekam 3 Sampel Wajah</button>
+          <button id="btnStopDaftar" class="action danger" disabled>Matikan Kamera</button>
+        </div>
+
+        <div class="hint">
+          Saat pendaftaran, gunakan pencahayaan cukup, wajah menghadap kamera, dan jangan memakai masker/kacamata hitam. Tiga descriptor disimpan agar pencocokan lebih stabil.
+        </div>
       </div>
     </section>
+
+    <footer>Absen Face Detection by Gurukemarinsore V4</footer>
   </main>
 
+  <canvas id="qrCanvas" hidden></canvas>
+
   <script>
-    // ============================================================
-    // 1) WAJIB: ganti dengan URL Web App Google Apps Script Anda.
-    //    Bentuk: https://script.google.com/macros/s/XXXXXXXX/exec
-    // ============================================================
     const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzXW6qY-46YakrK2wGypx1BxO20ceIQ9ZcgrgvKTG867Xfbh5bYE8o4xy4BqCrHTH2v/exec';
 
-    // face-api.js tetap dipakai hanya untuk membuat descriptor wajah.
-    const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
+    // face-api.js dipakai hanya untuk descriptor akhir.
+    const FACE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
 
-    // MediaPipe Face Landmarker dipakai untuk liveness real-time:
-    // kedipan + gerakan kepala ke samping + kembali lurus.
+    // MediaPipe untuk liveness real-time.
     const MEDIAPIPE_VERSION = '0.10.35';
     const MEDIAPIPE_MODULE_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/vision_bundle.mjs`;
     const MEDIAPIPE_WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/wasm`;
@@ -475,8 +850,17 @@
       modelsReady: false,
       faceLandmarker: null,
       lastMediaPipeTimestamp: 0,
+
       streamAbsen: null,
       streamDaftar: null,
+
+      attendanceType: 'MASUK',
+      attendancePhase: 'IDLE', // IDLE, QR, FACE, VERIFYING, DONE
+      qrScanActive: false,
+      qrSession: '',
+      qrName: '',
+      successfulSnapshot: '',
+
       daftarValidated: false,
       daftarNama: '',
       busy: false
@@ -487,7 +871,10 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       bindUI();
-      waitForFaceApiAndLoadModels();
+      initProgressRings();
+      resetAttendanceFlow();
+      resetScanProgress('daftar');
+      waitForLibrariesAndLoadModels();
     });
 
     function bindUI() {
@@ -495,9 +882,11 @@
         btn.addEventListener('click', () => switchTab(btn.dataset.tab));
       });
 
-      $('btnCameraAbsen').addEventListener('click', startCameraAbsen);
-      $('btnStopAbsen').addEventListener('click', stopCameraAbsen);
-      $('btnVerifikasi').addEventListener('click', prosesAbsensi);
+      $('segmentMasuk').addEventListener('click', () => setAttendanceType('MASUK'));
+      $('segmentPulang').addEventListener('click', () => setAttendanceType('PULANG'));
+
+      $('btnScanQr').addEventListener('click', startQrAttendance);
+      $('btnBatalAbsen').addEventListener('click', () => resetAttendanceFlow());
 
       $('btnCekGuru').addEventListener('click', cekGuruUntukRegistrasi);
       $('btnCameraDaftar').addEventListener('click', startCameraDaftar);
@@ -508,39 +897,42 @@
       $('kodeRegistrasi').addEventListener('input', resetValidasiDaftar);
     }
 
-    async function waitForFaceApiAndLoadModels() {
+    async function waitForLibrariesAndLoadModels() {
       try {
-        $('modelStatus').textContent = 'Memuat face-api.js dan MediaPipe…';
+        $('modelStatus').textContent = 'Memuat face-api.js, QR scanner, dan MediaPipe…';
 
         let attempts = 0;
-        while (typeof window.faceapi === 'undefined' && attempts < 100) {
+        while (
+          (typeof window.faceapi === 'undefined' || typeof window.jsQR === 'undefined') &&
+          attempts < 120
+        ) {
           await sleep(100);
           attempts++;
         }
+
         if (typeof window.faceapi === 'undefined') {
-          throw new Error('Library face-api.js gagal dimuat. Periksa koneksi internet.');
+          throw new Error('face-api.js gagal dimuat.');
+        }
+        if (typeof window.jsQR === 'undefined') {
+          throw new Error('QR scanner gagal dimuat.');
         }
 
-        // Mulai unduh modul MediaPipe bersamaan dengan model face-api agar waktu tunggu lebih singkat.
+        // Mulai unduh MediaPipe bersamaan dengan model face-api.
         const mediaPipeModulePromise = import(MEDIAPIPE_MODULE_URL);
 
         $('modelStatus').textContent = 'Memuat model pengenalan wajah…';
         await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+          faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL)
         ]);
 
         $('modelStatus').textContent = 'Menyiapkan liveness MediaPipe…';
         const visionModule = await mediaPipeModulePromise;
         const vision = await visionModule.FilesetResolver.forVisionTasks(MEDIAPIPE_WASM_URL);
 
-        const baseOptions = {
-          modelAssetPath: MEDIAPIPE_FACE_MODEL_URL
-        };
-
-        const options = {
-          baseOptions,
+        const commonOptions = {
+          baseOptions: { modelAssetPath: MEDIAPIPE_FACE_MODEL_URL },
           runningMode: 'VIDEO',
           numFaces: 2,
           minFaceDetectionConfidence: 0.5,
@@ -549,45 +941,58 @@
           outputFaceBlendshapes: true
         };
 
-        // Coba GPU terlebih dahulu. Jika perangkat/browser tidak mendukung, otomatis fallback CPU.
         try {
           state.faceLandmarker = await visionModule.FaceLandmarker.createFromOptions(
             vision,
             {
-              ...options,
+              ...commonOptions,
               baseOptions: {
-                ...baseOptions,
+                modelAssetPath: MEDIAPIPE_FACE_MODEL_URL,
                 delegate: 'GPU'
               }
             }
           );
         } catch (gpuError) {
-          console.warn('MediaPipe GPU tidak tersedia, menggunakan CPU.', gpuError);
+          console.warn('GPU MediaPipe tidak tersedia, fallback ke CPU.', gpuError);
           state.faceLandmarker = await visionModule.FaceLandmarker.createFromOptions(
             vision,
-            options
+            commonOptions
           );
         }
 
         state.modelsReady = true;
-        $('modelStatus').textContent = 'Model wajah dan liveness siap digunakan.';
+        $('modelStatus').textContent = 'Semua komponen siap digunakan.';
         refreshButtons();
       } catch (err) {
         console.error(err);
         state.modelsReady = false;
         state.faceLandmarker = null;
-        $('modelStatus').textContent = 'Gagal memuat model: ' + err.message;
-        showStatus('statusAbsen', 'error', 'Model wajah/liveness gagal dimuat. Muat ulang halaman dan periksa koneksi internet.');
+        $('modelStatus').textContent = 'Gagal memuat komponen: ' + err.message;
+        showStatus('statusAbsen', 'error', 'Komponen aplikasi gagal dimuat. Muat ulang halaman dan periksa koneksi internet.');
+        refreshButtons();
       }
     }
 
     function switchTab(tab) {
-      document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === tab));
+      document.querySelectorAll('.tab').forEach(x => {
+        x.classList.toggle('active', x.dataset.tab === tab);
+      });
+
       $('panel-absen').classList.toggle('active', tab === 'absen');
       $('panel-daftar').classList.toggle('active', tab === 'daftar');
 
       if (tab === 'absen') stopCameraDaftar();
-      if (tab === 'daftar') stopCameraAbsen();
+      if (tab === 'daftar') resetAttendanceFlow();
+    }
+
+    function setAttendanceType(type) {
+      if (state.attendancePhase !== 'IDLE' || state.busy) return;
+      if (type !== 'MASUK' && type !== 'PULANG') return;
+
+      state.attendanceType = type;
+      $('attendanceSegment').dataset.value = type;
+      $('segmentMasuk').classList.toggle('active', type === 'MASUK');
+      $('segmentPulang').classList.toggle('active', type === 'PULANG');
     }
 
     function normalizeId(value) {
@@ -602,18 +1007,17 @@
 
     async function callApi(action, payload = {}) {
       if (!apiReady()) {
-        throw new Error('URL Google Apps Script belum diisi pada GAS_WEB_APP_URL di index.html.');
+        throw new Error('URL Google Apps Script belum valid.');
       }
 
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
+      const timeout = setTimeout(() => controller.abort(), 25000);
 
       try {
         const response = await fetch(GAS_WEB_APP_URL, {
           method: 'POST',
           redirect: 'follow',
           headers: {
-            // text/plain menjaga request tetap "simple request" dan menghindari preflight OPTIONS.
             'Content-Type': 'text/plain;charset=utf-8'
           },
           body: JSON.stringify({ action, ...payload }),
@@ -626,10 +1030,11 @@
 
         const text = await response.text();
         let data;
+
         try {
           data = JSON.parse(text);
         } catch {
-          throw new Error('Respons backend bukan JSON yang valid. Pastikan URL /exec dan deployment terbaru digunakan.');
+          throw new Error('Respons backend bukan JSON yang valid. Pastikan deployment terbaru menggunakan URL /exec yang sama.');
         }
 
         if (!data.ok) {
@@ -642,7 +1047,7 @@
         return data;
       } catch (err) {
         if (err.name === 'AbortError') {
-          throw new Error('Backend terlalu lama merespons. Coba lagi.');
+          throw new Error('Backend terlalu lama merespons. Silakan coba lagi.');
         }
         throw err;
       } finally {
@@ -650,16 +1055,16 @@
       }
     }
 
-    async function openCamera(videoEl, facingMode = 'user') {
+    async function openCamera(videoEl, facingMode) {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Browser tidak mendukung akses kamera. Gunakan Chrome/Edge/Safari terbaru melalui HTTPS.');
+        throw new Error('Browser tidak mendukung akses kamera. Gunakan browser terbaru melalui HTTPS.');
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode,
-          width: { ideal: 720 },
-          height: { ideal: 540 }
+          facingMode: { ideal: facingMode },
+          width: { ideal: 960 },
+          height: { ideal: 720 }
         },
         audio: false
       });
@@ -677,7 +1082,10 @@
           return;
         }
 
-        const timer = setTimeout(() => reject(new Error('Kamera tidak siap dalam waktu yang ditentukan.')), 10000);
+        const timer = setTimeout(() => {
+          reject(new Error('Kamera tidak siap dalam waktu yang ditentukan.'));
+        }, 10000);
+
         const onReady = () => {
           if (videoEl.videoWidth > 0) {
             clearTimeout(timer);
@@ -685,6 +1093,7 @@
             resolve();
           }
         };
+
         videoEl.addEventListener('loadeddata', onReady);
       });
     }
@@ -692,72 +1101,6 @@
     function stopStream(stream) {
       if (!stream) return;
       stream.getTracks().forEach(track => track.stop());
-    }
-
-    async function startCameraAbsen() {
-      if (!state.modelsReady) {
-        showStatus('statusAbsen', 'warn', 'Model wajah masih dimuat. Tunggu beberapa detik.');
-        return;
-      }
-      try {
-        stopCameraAbsen();
-        resetScanProgress('absen');
-        state.streamAbsen = await openCamera($('videoAbsen'));
-        $('placeholderAbsen').style.display = 'none';
-        $('badgeAbsen').textContent = 'Kamera aktif';
-        showStatus('statusAbsen', 'info', 'Kamera aktif. Posisikan satu wajah di dalam panduan.');
-      } catch (err) {
-        console.error(err);
-        showStatus('statusAbsen', 'error', humanCameraError(err));
-      }
-      refreshButtons();
-    }
-
-    function stopCameraAbsen(preserveProgress = false) {
-      stopStream(state.streamAbsen);
-      state.streamAbsen = null;
-      $('videoAbsen').srcObject = null;
-      $('placeholderAbsen').style.display = 'grid';
-      $('badgeAbsen').textContent = 'Siap';
-      if (preserveProgress !== true) resetScanProgress('absen');
-      refreshButtons();
-    }
-
-    async function startCameraDaftar() {
-      if (!state.daftarValidated) {
-        showStatus('statusDaftar', 'warn', 'Cek ID dan kode registrasi terlebih dahulu.');
-        return;
-      }
-      if (!state.modelsReady) {
-        showStatus('statusDaftar', 'warn', 'Model wajah masih dimuat.');
-        return;
-      }
-
-      try {
-        stopCameraDaftar();
-        resetScanProgress('daftar');
-        state.streamDaftar = await openCamera($('videoDaftar'));
-        $('placeholderDaftar').style.display = 'none';
-        $('badgeDaftar').textContent = 'Kamera aktif';
-        showStatus('statusDaftar', 'info', `Data valid untuk ${state.daftarNama}. Posisikan satu wajah di dalam panduan.`);
-      } catch (err) {
-        console.error(err);
-        showStatus('statusDaftar', 'error', humanCameraError(err));
-      }
-      refreshButtons();
-    }
-
-    function stopCameraDaftar(preserveProgress = false) {
-      stopStream(state.streamDaftar);
-      state.streamDaftar = null;
-      $('videoDaftar').srcObject = null;
-      $('placeholderDaftar').style.display = 'grid';
-      $('placeholderDaftar').innerHTML = state.daftarValidated
-        ? 'Kamera belum aktif.<br>Tekan tombol <b>Aktifkan Kamera</b>.'
-        : 'Verifikasi ID dan kode registrasi terlebih dahulu.';
-      $('badgeDaftar').textContent = state.daftarValidated ? 'Identitas valid' : 'Belum diverifikasi';
-      if (preserveProgress !== true) resetScanProgress('daftar');
-      refreshButtons();
     }
 
     function humanCameraError(err) {
@@ -773,8 +1116,320 @@
       return 'Kamera gagal dibuka: ' + (err?.message || 'Kesalahan tidak diketahui.');
     }
 
+    /* ============================================================
+       ABSENSI: QR -> FACE
+       ============================================================ */
+
+    async function startQrAttendance() {
+      if (state.busy) return;
+
+      if (!state.modelsReady) {
+        showStatus('statusAbsen', 'warn', 'Komponen aplikasi masih dimuat. Tunggu sampai status menyatakan siap.');
+        return;
+      }
+
+      try {
+        setBusy(true);
+        resetAttendanceFlow({ preserveBusy: true, preserveType: true });
+
+        state.attendancePhase = 'QR';
+        updateAttendanceSteps('QR');
+
+        $('instructionTitle').textContent = 'Arahkan kamera ke QR ID';
+        $('instructionDetail').textContent = 'Posisikan QR di dalam kotak sampai terbaca otomatis.';
+        $('modeAbsen').textContent = 'Scan QR ID';
+        $('qrGuide').classList.add('show');
+        $('scanRingAbsen').classList.remove('show');
+
+        const video = $('videoAbsen');
+        video.classList.remove('mirror');
+
+        state.streamAbsen = await openCamera(video, 'environment');
+        $('cameraOffAbsen').style.display = 'none';
+
+        state.qrScanActive = true;
+        refreshButtons();
+        setBusy(false);
+
+        await scanQrLoop();
+      } catch (err) {
+        console.error(err);
+        setBusy(false);
+        state.qrScanActive = false;
+        showStatus('statusAbsen', 'error', humanCameraError(err));
+        $('instructionTitle').textContent = 'Kamera QR gagal dibuka';
+        $('instructionDetail').textContent = 'Periksa izin kamera lalu coba kembali.';
+        resetCameraOnlyAbsen();
+        state.attendancePhase = 'IDLE';
+        refreshButtons();
+      }
+    }
+
+    async function scanQrLoop() {
+      const video = $('videoAbsen');
+      const canvas = $('qrCanvas');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+      while (state.qrScanActive && state.attendancePhase === 'QR') {
+        if (video.readyState >= 2 && video.videoWidth > 0) {
+          const targetWidth = Math.min(640, video.videoWidth);
+          const scale = targetWidth / video.videoWidth;
+          const targetHeight = Math.max(1, Math.round(video.videoHeight * scale));
+
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+
+          ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
+
+          const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+          const qr = jsQR(imageData.data, targetWidth, targetHeight, {
+            inversionAttempts: 'attemptBoth'
+          });
+
+          if (qr && qr.data) {
+            state.qrScanActive = false;
+            await handleQrDetected(String(qr.data).trim());
+            return;
+          }
+        }
+
+        await sleep(90);
+      }
+    }
+
+    async function handleQrDetected(qrToken) {
+      if (!qrToken) {
+        showStatus('statusAbsen', 'error', 'QR tidak berisi data yang valid.');
+        state.qrScanActive = true;
+        return scanQrLoop();
+      }
+
+      try {
+        setBusy(true);
+        $('instructionTitle').textContent = 'QR terbaca';
+        $('instructionDetail').textContent = 'Memvalidasi QR ID…';
+        $('modeAbsen').textContent = 'Memvalidasi QR';
+
+        const res = await callApi('RESOLVE_QR', {
+          qrToken,
+          jenis: state.attendanceType
+        });
+
+        state.qrSession = res.scanSession;
+        state.qrName = res.nama;
+
+        $('qrNama').textContent = res.nama;
+        $('qrResult').classList.add('show');
+
+        updateAttendanceSteps('FACE');
+
+        // Hentikan kamera belakang lalu pindah ke kamera depan.
+        resetCameraOnlyAbsen();
+        state.attendancePhase = 'FACE';
+
+        $('instructionTitle').textContent = `QR dikenali: ${res.nama}`;
+        $('instructionDetail').textContent = 'Menyiapkan kamera depan untuk verifikasi wajah…';
+        $('modeAbsen').textContent = 'Menyiapkan wajah';
+
+        const video = $('videoAbsen');
+        video.classList.add('mirror');
+        state.streamAbsen = await openCamera(video, 'user');
+        $('cameraOffAbsen').style.display = 'none';
+
+        $('qrGuide').classList.remove('show');
+        $('scanRingAbsen').classList.add('show');
+        resetScanProgress('absen');
+
+        setBusy(false);
+        refreshButtons();
+
+        // Sedikit waktu untuk auto exposure kamera depan, bukan delay verifikasi.
+        await sleep(250);
+        await verifyFaceAttendance();
+      } catch (err) {
+        console.error(err);
+        setBusy(false);
+        showStatus('statusAbsen', 'error', err.message);
+        $('instructionTitle').textContent = 'QR ID tidak dapat digunakan';
+        $('instructionDetail').textContent = 'Tekan Scan QR ID untuk mencoba kembali.';
+        resetCameraOnlyAbsen();
+        state.attendancePhase = 'IDLE';
+        state.qrSession = '';
+        state.qrName = '';
+        updateAttendanceSteps('QR');
+        refreshButtons();
+      }
+    }
+
+    async function verifyFaceAttendance() {
+      if (state.busy || !state.qrSession || !state.streamAbsen) return;
+
+      setBusy(true);
+      hideResult();
+      hideStatus('statusAbsen');
+
+      try {
+        $('instructionTitle').textContent = 'Tatap kamera';
+        $('instructionDetail').textContent = 'Ikuti petunjuk: kedip, gerakkan kepala ke arah yang diminta, lalu kembali lurus.';
+        $('modeAbsen').textContent = 'Liveness';
+        resetScanProgress('absen');
+
+        await livenessChallenge($('videoAbsen'), (message, progress) => {
+          $('instructionTitle').textContent = message;
+          $('instructionDetail').textContent = getLivenessDetail_(message);
+          $('modeAbsen').textContent = 'Liveness';
+          setScanProgress('absen', progress);
+        });
+
+        // Snapshot disimpan lokal dan baru ditampilkan jika backend menyatakan wajah cocok.
+        state.successfulSnapshot = captureVideoSnapshot($('videoAbsen'));
+
+        $('instructionTitle').textContent = 'Mengambil data wajah';
+        $('instructionDetail').textContent = 'Satu sampel akhir sedang diproses.';
+        $('modeAbsen').textContent = 'Data wajah';
+        setScanProgress('absen', 84);
+
+        // Diperkecil ke inputSize 224 agar tahap descriptor lebih cepat di HP.
+        const descriptor = await captureDescriptor($('videoAbsen'));
+        setScanProgress('absen', 92);
+
+        state.attendancePhase = 'VERIFYING';
+        $('instructionTitle').textContent = 'Memverifikasi wajah';
+        $('instructionDetail').textContent = 'Mencocokkan dengan pemilik QR ID…';
+        $('modeAbsen').textContent = 'Verifikasi';
+
+        const res = await callApi('VERIFY_ATTENDANCE', {
+          scanSession: state.qrSession,
+          descriptor: Array.from(descriptor)
+        });
+
+        setScanProgress('absen', 100, true);
+        state.attendancePhase = 'DONE';
+        updateAttendanceSteps('DONE');
+
+        $('resultPhoto').src = state.successfulSnapshot;
+        $('resultNama').textContent = res.nama;
+        $('resultMeta').textContent =
+          `${res.jenis} • ${res.tanggal} ${res.jam}` +
+          (typeof res.distance === 'number' ? ` • jarak ${res.distance.toFixed(4)}` : '');
+
+        $('resultAbsen').classList.add('show');
+
+        $('instructionTitle').textContent = res.duplicate
+          ? 'Absensi sudah tercatat'
+          : 'Absensi berhasil';
+        $('instructionDetail').textContent = res.message;
+        $('modeAbsen').textContent = '✓ Selesai';
+
+        showStatus(
+          'statusAbsen',
+          res.duplicate ? 'warn' : 'ok',
+          res.message
+        );
+
+        // Kamera dimatikan setelah hasil berhasil, tetapi ring 100% dan centang dipertahankan.
+        stopStream(state.streamAbsen);
+        state.streamAbsen = null;
+        $('videoAbsen').srcObject = null;
+        $('cameraOffAbsen').style.display = 'none';
+
+        state.qrSession = '';
+      } catch (err) {
+        console.error(err);
+        state.attendancePhase = 'FACE';
+        resetScanProgress('absen');
+        $('instructionTitle').textContent = 'Verifikasi belum berhasil';
+        $('instructionDetail').textContent = err.message;
+        $('modeAbsen').textContent = 'Coba lagi';
+        showStatus('statusAbsen', 'error', err.message);
+
+        // Jika session QR kadaluarsa/tidak valid, ulang dari QR.
+        if (err.code === 'INVALID_SCAN_SESSION' || err.code === 'SCAN_SESSION_EXPIRED') {
+          resetAttendanceFlow({ preserveType: true });
+        }
+      } finally {
+        setBusy(false);
+        refreshButtons();
+      }
+    }
+
+    function resetAttendanceFlow(options = {}) {
+      const preserveBusy = options.preserveBusy === true;
+      const preserveType = options.preserveType !== false;
+      const busyBefore = state.busy;
+      const typeBefore = state.attendanceType;
+
+      state.qrScanActive = false;
+      resetCameraOnlyAbsen();
+
+      state.attendancePhase = 'IDLE';
+      state.qrSession = '';
+      state.qrName = '';
+      state.successfulSnapshot = '';
+
+      $('qrResult').classList.remove('show');
+      $('qrNama').textContent = '';
+      $('qrGuide').classList.remove('show');
+      $('scanRingAbsen').classList.remove('show');
+
+      $('instructionTitle').textContent = 'Siap melakukan absensi';
+      $('instructionDetail').textContent = 'Pilih jenis absensi, lalu tekan tombol Scan QR ID.';
+      $('modeAbsen').textContent = 'Siap';
+      $('cameraOffAbsen').style.display = 'grid';
+
+      hideStatus('statusAbsen');
+      hideResult();
+      resetScanProgress('absen');
+      updateAttendanceSteps('QR');
+
+      if (preserveType) setAttendanceType(typeBefore);
+      if (preserveBusy) state.busy = busyBefore;
+
+      refreshButtons();
+    }
+
+    function resetCameraOnlyAbsen() {
+      state.qrScanActive = false;
+      stopStream(state.streamAbsen);
+      state.streamAbsen = null;
+
+      const video = $('videoAbsen');
+      video.srcObject = null;
+
+      $('cameraOffAbsen').style.display = 'grid';
+      $('qrGuide').classList.remove('show');
+    }
+
+    function updateAttendanceSteps(stage) {
+      const qr = $('stepQr');
+      const face = $('stepFace');
+
+      qr.className = 'step';
+      face.className = 'step';
+
+      if (stage === 'QR') {
+        qr.classList.add('active');
+      } else if (stage === 'FACE') {
+        qr.classList.add('done');
+        face.classList.add('active');
+      } else if (stage === 'DONE') {
+        qr.classList.add('done');
+        face.classList.add('done');
+      }
+
+      if (state.attendancePhase === 'DONE') {
+        qr.className = 'step done';
+        face.className = 'step done';
+      }
+    }
+
+    /* ============================================================
+       ENROLLMENT
+       ============================================================ */
+
     async function cekGuruUntukRegistrasi() {
       if (state.busy) return;
+
       const id = normalizeId($('daftarId').value);
       const kode = String($('kodeRegistrasi').value || '').trim();
 
@@ -788,12 +1443,15 @@
 
       try {
         const res = await callApi('ENROLL_VALIDATE', { id, kode });
+
         state.daftarValidated = true;
         state.daftarNama = res.nama;
+
         $('daftarId').value = id;
-        $('placeholderDaftar').innerHTML = 'Identitas valid.<br>Tekan tombol <b>Aktifkan Kamera</b>.';
-        $('badgeDaftar').textContent = 'Identitas valid';
-        showStatus('statusDaftar', 'ok', `Data ditemukan: ${res.nama}\nSilakan aktifkan kamera untuk merekam wajah.`);
+        $('modeDaftar').textContent = 'Identitas valid';
+        $('instructionDaftarTitle').textContent = res.nama;
+        $('instructionDaftarDetail').textContent = 'Aktifkan kamera untuk merekam tiga sampel wajah.';
+        showStatus('statusDaftar', 'ok', `Data ditemukan: ${res.nama}\nSilakan aktifkan kamera.`);
       } catch (err) {
         state.daftarValidated = false;
         state.daftarNama = '';
@@ -804,10 +1462,54 @@
       }
     }
 
+    async function startCameraDaftar() {
+      if (!state.daftarValidated) {
+        showStatus('statusDaftar', 'warn', 'Cek ID dan kode registrasi terlebih dahulu.');
+        return;
+      }
+
+      if (!state.modelsReady) {
+        showStatus('statusDaftar', 'warn', 'Model wajah masih dimuat.');
+        return;
+      }
+
+      try {
+        stopCameraDaftar();
+        resetScanProgress('daftar');
+
+        state.streamDaftar = await openCamera($('videoDaftar'), 'user');
+        $('cameraOffDaftar').style.display = 'none';
+        $('modeDaftar').textContent = 'Kamera aktif';
+        $('instructionDaftarTitle').textContent = 'Posisikan wajah di lingkaran';
+        $('instructionDaftarDetail').textContent = 'Setelah siap, tekan Rekam 3 Sampel Wajah.';
+        showStatus('statusDaftar', 'info', `Kamera aktif untuk ${state.daftarNama}.`);
+      } catch (err) {
+        console.error(err);
+        showStatus('statusDaftar', 'error', humanCameraError(err));
+      }
+
+      refreshButtons();
+    }
+
+    function stopCameraDaftar(preserveProgress = false) {
+      stopStream(state.streamDaftar);
+      state.streamDaftar = null;
+
+      $('videoDaftar').srcObject = null;
+      $('cameraOffDaftar').style.display = 'grid';
+      $('modeDaftar').textContent = state.daftarValidated ? 'Identitas valid' : 'Belum diverifikasi';
+
+      if (!preserveProgress) resetScanProgress('daftar');
+      refreshButtons();
+    }
+
     function resetValidasiDaftar() {
       state.daftarValidated = false;
       state.daftarNama = '';
+
       stopCameraDaftar();
+      $('instructionDaftarTitle').textContent = 'Verifikasi data guru terlebih dahulu';
+      $('instructionDaftarDetail').textContent = 'Setelah identitas valid, aktifkan kamera dan ikuti petunjuk liveness.';
       hideStatus('statusDaftar');
     }
 
@@ -821,6 +1523,7 @@
         showStatus('statusDaftar', 'warn', 'Validasi ID dan kode registrasi terlebih dahulu.');
         return;
       }
+
       if (!state.streamDaftar) {
         showStatus('statusDaftar', 'warn', 'Aktifkan kamera terlebih dahulu.');
         return;
@@ -830,25 +1533,29 @@
 
       try {
         resetScanProgress('daftar');
-        showStatus('statusDaftar', 'info', 'Pemeriksaan kehadiran: tatap kamera, kedipkan mata, lalu gerakkan kepala ke samping dan kembali lurus.');
-        $('badgeDaftar').textContent = 'Mencari wajah';
+        showStatus('statusDaftar', 'info', 'Ikuti petunjuk liveness pada layar.');
 
-        await livenessChallenge($('videoDaftar'), (msg, progress) => {
-          $('badgeDaftar').textContent = msg;
+        await livenessChallenge($('videoDaftar'), (message, progress) => {
+          $('instructionDaftarTitle').textContent = message;
+          $('instructionDaftarDetail').textContent = getLivenessDetail_(message);
+          $('modeDaftar').textContent = 'Liveness';
           setScanProgress('daftar', progress);
         });
 
-        showStatus('statusDaftar', 'info', 'Liveness berhasil. Mengambil 3 sampel wajah…');
-        $('badgeDaftar').textContent = 'Mengambil sampel';
+        $('instructionDaftarTitle').textContent = 'Mengambil 3 sampel wajah';
+        $('instructionDaftarDetail').textContent = 'Tetap melihat kamera.';
+        $('modeDaftar').textContent = 'Merekam';
         setScanProgress('daftar', 82);
 
         const samples = [];
+
         for (let i = 0; i < 3; i++) {
           const descriptor = await captureDescriptor($('videoDaftar'));
           samples.push(Array.from(descriptor));
-          $('badgeDaftar').textContent = `Sampel ${i + 1}/3`;
-          setScanProgress('daftar', 86 + ((i + 1) * 3));
-          await sleep(300);
+
+          $('instructionDaftarTitle').textContent = `Sampel ${i + 1} dari 3`;
+          setScanProgress('daftar', 84 + ((i + 1) * 4));
+          await sleep(220);
         }
 
         const quality = averagePairwiseDistance(samples);
@@ -856,7 +1563,10 @@
           throw new Error('Tiga sampel terlalu berbeda. Pastikan hanya satu orang di depan kamera dan pencahayaan stabil, lalu ulangi.');
         }
 
-        setScanProgress('daftar', 96);
+        setScanProgress('daftar', 97);
+        $('instructionDaftarTitle').textContent = 'Menyimpan data wajah';
+        $('instructionDaftarDetail').textContent = 'Mohon tunggu sebentar.';
+
         const res = await callApi('ENROLL_SAVE', {
           id,
           kode,
@@ -864,128 +1574,48 @@
         });
 
         setScanProgress('daftar', 100, true);
+        $('instructionDaftarTitle').textContent = 'Pendaftaran wajah berhasil';
+        $('instructionDaftarDetail').textContent = res.nama;
+        $('modeDaftar').textContent = '✓ Selesai';
+
         showStatus('statusDaftar', 'ok', `Pendaftaran wajah berhasil untuk ${res.nama}.`);
-        $('badgeDaftar').textContent = 'Pendaftaran berhasil';
+
         $('kodeRegistrasi').value = '';
         stopCameraDaftar(true);
         state.daftarValidated = false;
         state.daftarNama = '';
       } catch (err) {
         console.error(err);
+        resetScanProgress('daftar');
+        $('instructionDaftarTitle').textContent = 'Perekaman belum berhasil';
+        $('instructionDaftarDetail').textContent = err.message;
+        $('modeDaftar').textContent = 'Coba lagi';
         showStatus('statusDaftar', 'error', err.message);
-        $('badgeDaftar').textContent = 'Coba lagi';
       } finally {
         setBusy(false);
         refreshButtons();
       }
     }
 
-    async function prosesAbsensi() {
-      if (state.busy) return;
-
-      const id = normalizeId($('absenId').value);
-      const jenis = $('jenisAbsen').value;
-
-      if (!id) {
-        showStatus('statusAbsen', 'warn', 'Masukkan ID guru.');
-        return;
-      }
-      if (!state.streamAbsen) {
-        showStatus('statusAbsen', 'warn', 'Aktifkan kamera terlebih dahulu.');
-        return;
-      }
-
-      setBusy(true);
-      hideResult();
-
-      try {
-        resetScanProgress('absen');
-        showStatus('statusAbsen', 'info', 'Tatap kamera, kedipkan mata, lalu gerakkan kepala ke samping dan kembali lurus.');
-        $('badgeAbsen').textContent = 'Mencari wajah';
-
-        await livenessChallenge($('videoAbsen'), (msg, progress) => {
-          $('badgeAbsen').textContent = msg;
-          setScanProgress('absen', progress);
-        });
-
-        showStatus('statusAbsen', 'info', 'Liveness berhasil. Memverifikasi wajah…');
-        $('badgeAbsen').textContent = 'Memverifikasi';
-        setScanProgress('absen', 86);
-
-        const descriptor = await captureDescriptor($('videoAbsen'));
-        setScanProgress('absen', 93);
-
-        const res = await callApi('VERIFY_ATTENDANCE', {
-          id,
-          jenis,
-          descriptor: Array.from(descriptor)
-        });
-
-        $('absenId').value = id;
-        $('resultNama').textContent = res.nama;
-        $('resultMeta').textContent =
-          `${res.jenis} • ${res.tanggal} ${res.jam}` +
-          (typeof res.distance === 'number' ? ` • skor jarak ${res.distance.toFixed(4)}` : '');
-
-        $('resultAbsen').classList.add('show');
-        setScanProgress('absen', 100, true);
-
-        if (res.duplicate) {
-          showStatus('statusAbsen', 'warn', res.message);
-          $('badgeAbsen').textContent = 'Sudah tercatat';
-        } else {
-          showStatus('statusAbsen', 'ok', res.message);
-          $('badgeAbsen').textContent = 'Absensi berhasil';
-        }
-
-        await sleep(1000);
-        stopCameraAbsen(true);
-      } catch (err) {
-        console.error(err);
-        showStatus('statusAbsen', 'error', err.message);
-        $('badgeAbsen').textContent = 'Verifikasi gagal';
-      } finally {
-        setBusy(false);
-        refreshButtons();
-      }
-    }
-
-    async function captureDescriptor(videoEl) {
-      const options = new faceapi.TinyFaceDetectorOptions({
-        inputSize: 320,
-        scoreThreshold: 0.55
-      });
-
-      // Gunakan detectAllFaces supaya kondisi >1 wajah dapat ditolak.
-      const detections = await faceapi
-        .detectAllFaces(videoEl, options)
-        .withFaceLandmarks()
-        .withFaceDescriptors();
-
-      if (detections.length === 0) {
-        throw new Error('Wajah tidak terdeteksi. Dekatkan wajah, lihat kamera, dan perbaiki pencahayaan.');
-      }
-      if (detections.length > 1) {
-        throw new Error('Terdeteksi lebih dari satu wajah. Pastikan hanya satu orang di depan kamera.');
-      }
-
-      return detections[0].descriptor;
-    }
+    /* ============================================================
+       LIVENESS MEDIAPIPE
+       Wajib: blink -> random left/right -> kembali lurus
+       ============================================================ */
 
     async function livenessChallenge(videoEl, onProgress) {
       if (!state.faceLandmarker) {
         throw new Error('MediaPipe Face Landmarker belum siap. Muat ulang halaman dan tunggu sampai model siap.');
       }
 
-      // Tahap 0 — stabilisasi singkat untuk baseline mata terbuka dan posisi kepala lurus.
-      const calibrationDeadline = Date.now() + 4500;
+      // 1. Kalibrasi singkat.
+      const calibrationDeadline = Date.now() + 3800;
       const blinkSamples = [];
       const headSamples = [];
       let stableFrames = 0;
 
-      onProgress?.('Tatap kamera', 4);
+      onProgress?.('Tatap kamera', 2);
 
-      while (Date.now() < calibrationDeadline && stableFrames < 8) {
+      while (Date.now() < calibrationDeadline && stableFrames < 7) {
         const result = getMediaPipeResult_(videoEl);
         const faceCount = result.faceLandmarks?.length || 0;
 
@@ -997,42 +1627,42 @@
           const blinkLeft = getBlendshapeScore_(result, 'eyeBlinkLeft');
           const blinkRight = getBlendshapeScore_(result, 'eyeBlinkRight');
           const blinkAverage = (blinkLeft + blinkRight) / 2;
-          const headOffset = getHeadHorizontalOffset_(result);
+          const headOffset = getDisplayedHeadOffset_(result, videoEl);
 
           if (Number.isFinite(blinkAverage) && Number.isFinite(headOffset)) {
             blinkSamples.push(blinkAverage);
             headSamples.push(headOffset);
             stableFrames++;
 
-            const calibrationProgress = 4 + Math.round((stableFrames / 8) * 12);
-            onProgress?.(`Stabilkan wajah ${stableFrames}/8`, calibrationProgress);
+            onProgress?.(
+              `Stabilkan wajah ${stableFrames}/7`,
+              3 + Math.round((stableFrames / 7) * 12)
+            );
           }
         } else {
-          stableFrames = Math.max(0, stableFrames - 1);
-          onProgress?.('Posisikan wajah di dalam lingkaran', 4);
+          onProgress?.('Posisikan wajah di dalam lingkaran', 2);
         }
 
-        await sleep(35);
+        await sleep(28);
       }
 
-      if (stableFrames < 5 || blinkSamples.length < 5 || headSamples.length < 5) {
+      if (stableFrames < 5) {
         throw new Error('Wajah belum terbaca stabil. Hadapkan wajah lurus ke kamera dan pastikan pencahayaan cukup.');
       }
 
-      // Baseline blink menggunakan beberapa skor terendah agar kedipan kecil saat kalibrasi
-      // tidak membuat ambang terlalu tinggi.
       const lowestBlink = [...blinkSamples].sort((a, b) => a - b).slice(0, 4);
       const blinkBaseline = lowestBlink.reduce((sum, value) => sum + value, 0) / lowestBlink.length;
 
-      const closedThreshold = clamp_(blinkBaseline + 0.38, 0.45, 0.72);
-      const openThreshold = clamp_(blinkBaseline + 0.18, 0.20, 0.38);
+      const closedThreshold = clamp_(blinkBaseline + 0.36, 0.43, 0.70);
+      const openThreshold = clamp_(blinkBaseline + 0.16, 0.18, 0.36);
       const headBaseline = median_(headSamples);
 
-      // Tahap 1 — KEDIP WAJIB.
-      const blinkDeadline = Date.now() + 9000;
-      let eyesClosed = false;
+      // 2. Kedipan wajib.
+      const blinkDeadline = Date.now() + 7500;
+      let closedSeen = false;
+      let reopened = false;
 
-      onProgress?.('Kedipkan kedua mata', 20);
+      onProgress?.('Kedipkan kedua mata', 18);
 
       while (Date.now() < blinkDeadline) {
         const result = getMediaPipeResult_(videoEl);
@@ -1043,69 +1673,46 @@
         }
 
         if (faceCount === 1) {
-          const blinkLeft = getBlendshapeScore_(result, 'eyeBlinkLeft');
-          const blinkRight = getBlendshapeScore_(result, 'eyeBlinkRight');
-          const blinkAverage = (blinkLeft + blinkRight) / 2;
-          const bothEyes = Math.min(blinkLeft, blinkRight);
+          const left = getBlendshapeScore_(result, 'eyeBlinkLeft');
+          const right = getBlendshapeScore_(result, 'eyeBlinkRight');
+          const avg = (left + right) / 2;
+          const both = Math.min(left, right);
 
-          if (!eyesClosed) {
-            onProgress?.('Kedipkan kedua mata', 24);
+          if (!closedSeen) {
+            const bothThreshold = Math.max(0.25, closedThreshold - 0.18);
 
-            const bothEyesThreshold = Math.max(0.28, closedThreshold - 0.18);
-            if (blinkAverage >= closedThreshold && bothEyes >= bothEyesThreshold) {
-              eyesClosed = true;
-              onProgress?.('Kedipan terbaca — buka mata', 38);
+            if (avg >= closedThreshold && both >= bothThreshold) {
+              closedSeen = true;
+              onProgress?.('Kedipan terbaca — buka mata', 35);
+            } else {
+              onProgress?.('Kedipkan kedua mata', 23);
             }
-          } else if (blinkAverage <= openThreshold) {
-            onProgress?.('Kedipan berhasil', 45);
-            await sleep(120);
+          } else if (avg <= openThreshold) {
+            reopened = true;
+            onProgress?.('Kedipan berhasil', 42);
             break;
           }
-        } else {
-          onProgress?.('Wajah tidak terlihat', 20);
         }
 
-        await sleep(30);
+        await sleep(25);
       }
 
-      if (!eyesClosed) {
+      if (!closedSeen || !reopened) {
         throw new Error('Kedipan belum terdeteksi. Tatap kamera lalu kedipkan kedua mata dengan jelas.');
       }
 
-      // Pastikan mata benar-benar kembali terbuka sebelum lanjut.
-      let reopened = false;
-      const reopenDeadline = Date.now() + 2500;
+      // 3. Random challenge kiri / kanan.
+      // Offset dihitung sesuai tampilan video pada layar, sehingga instruksi
+      // KIRI/KANAN tetap konsisten walaupun kamera depan memakai mirror.
+      const challengeDirection = Math.random() < 0.5 ? -1 : 1;
+      const challengeLabel = challengeDirection === -1 ? 'KIRI ←' : 'KANAN →';
 
-      while (Date.now() < reopenDeadline) {
-        const result = getMediaPipeResult_(videoEl);
-        const faceCount = result.faceLandmarks?.length || 0;
-
-        if (faceCount === 1) {
-          const blinkAverage = (
-            getBlendshapeScore_(result, 'eyeBlinkLeft') +
-            getBlendshapeScore_(result, 'eyeBlinkRight')
-          ) / 2;
-
-          if (blinkAverage <= openThreshold) {
-            reopened = true;
-            break;
-          }
-        }
-
-        await sleep(30);
-      }
-
-      if (!reopened) {
-        throw new Error('Kedipan terbaca, tetapi mata belum terbaca kembali terbuka. Lihat kamera dan coba lagi.');
-      }
-
-      // Tahap 2 — GERAK KEPALA KE SAMPING WAJIB, lalu kembali lurus.
-      const headDeadline = Date.now() + 11000;
+      const headDeadline = Date.now() + 9500;
       let sideFrames = 0;
       let sideReached = false;
       let returnFrames = 0;
 
-      onProgress?.('Gerakkan kepala perlahan ke samping', 50);
+      onProgress?.(`Gerakkan kepala ke ${challengeLabel}`, 48);
 
       while (Date.now() < headDeadline) {
         const result = getMediaPipeResult_(videoEl);
@@ -1116,76 +1723,74 @@
         }
 
         if (faceCount === 1) {
-          const headOffset = getHeadHorizontalOffset_(result);
-          const movement = Math.abs(headOffset - headBaseline);
+          const offset = getDisplayedHeadOffset_(result, videoEl);
+          const delta = offset - headBaseline;
+          const directedMovement = delta * challengeDirection;
+          const absoluteMovement = Math.abs(delta);
 
           if (!sideReached) {
-            if (movement >= 0.055) {
+            if (directedMovement >= 0.050 && absoluteMovement >= 0.050) {
               sideFrames++;
-              onProgress?.('Gerakan kepala terbaca', 60 + Math.min(sideFrames * 3, 8));
+              onProgress?.(`Gerakan ${challengeLabel} terbaca`, 57 + Math.min(sideFrames * 3, 8));
 
               if (sideFrames >= 2) {
                 sideReached = true;
-                onProgress?.('Kembali hadap lurus', 70);
+                onProgress?.('Kembali hadap lurus', 69);
               }
             } else {
               sideFrames = 0;
-              onProgress?.('Gerakkan kepala perlahan ke samping', 52);
+              onProgress?.(`Gerakkan kepala ke ${challengeLabel}`, 50);
             }
           } else {
-            if (movement <= 0.028) {
+            if (absoluteMovement <= 0.027) {
               returnFrames++;
-              onProgress?.('Kembali lurus', 74 + Math.min(returnFrames * 3, 6));
+              onProgress?.('Kembali lurus', 72 + Math.min(returnFrames * 3, 6));
 
               if (returnFrames >= 2) {
                 onProgress?.('Liveness berhasil', 80);
-                await sleep(120);
                 return true;
               }
             } else {
               returnFrames = 0;
-              onProgress?.('Kembali hadap lurus', 72);
+              onProgress?.('Kembali hadap lurus', 70);
             }
           }
-        } else {
-          onProgress?.('Posisikan wajah kembali', sideReached ? 70 : 50);
         }
 
-        await sleep(35);
+        await sleep(28);
       }
 
       if (!sideReached) {
-        throw new Error('Gerakan kepala ke samping belum terdeteksi. Gerakkan kepala perlahan ke salah satu sisi, bukan hanya menggeser mata.');
+        throw new Error(`Gerakan kepala ke ${challengeLabel.replace(' ←','').replace(' →','')} belum terdeteksi. Gerakkan kepala, bukan hanya mata.`);
       }
 
-      throw new Error('Kepala sudah bergerak ke samping, tetapi belum terbaca kembali lurus. Hadapkan wajah lurus ke kamera lalu coba lagi.');
+      throw new Error('Kepala belum terbaca kembali lurus. Hadapkan wajah lurus ke kamera lalu coba lagi.');
     }
 
     function getMediaPipeResult_(videoEl) {
       let timestamp = performance.now();
 
-      // MediaPipe VIDEO mensyaratkan timestamp selalu meningkat.
       if (timestamp <= state.lastMediaPipeTimestamp) {
         timestamp = state.lastMediaPipeTimestamp + 0.01;
       }
-      state.lastMediaPipeTimestamp = timestamp;
 
+      state.lastMediaPipeTimestamp = timestamp;
       return state.faceLandmarker.detectForVideo(videoEl, timestamp);
     }
 
     function getBlendshapeScore_(result, categoryName) {
       const categories = result.faceBlendshapes?.[0]?.categories || [];
       const found = categories.find(item =>
-        item.categoryName === categoryName || item.displayName === categoryName
+        item.categoryName === categoryName ||
+        item.displayName === categoryName
       );
+
       return found ? Number(found.score) || 0 : 0;
     }
 
     function getHeadHorizontalOffset_(result) {
       const landmarks = result.faceLandmarks?.[0];
 
-      // Indeks standar MediaPipe Face Mesh:
-      // 1 = ujung hidung, 234 dan 454 = sisi kiri/kanan wajah.
       if (!landmarks || landmarks.length <= 454) return NaN;
 
       const nose = landmarks[1];
@@ -1201,39 +1806,132 @@
       return (nose.x - faceCenterX) / faceWidth;
     }
 
-    function median_(values) {
-      if (!values || !values.length) return 0;
-      const sorted = [...values].sort((a, b) => a - b);
-      const mid = Math.floor(sorted.length / 2);
-      return sorted.length % 2
-        ? sorted[mid]
-        : (sorted[mid - 1] + sorted[mid]) / 2;
+    function getDisplayedHeadOffset_(result, videoEl) {
+      const rawOffset = getHeadHorizontalOffset_(result);
+      if (!Number.isFinite(rawOffset)) return NaN;
+
+      return videoEl.classList.contains('mirror')
+        ? -rawOffset
+        : rawOffset;
     }
 
-    function clamp_(value, min, max) {
-      return Math.min(max, Math.max(min, value));
+    function getLivenessDetail_(message) {
+      if (message.includes('Stabilkan') || message.includes('Posisikan')) {
+        return 'Hadapkan wajah lurus dan tetap berada di tengah lingkaran.';
+      }
+      if (message.includes('Kedip')) {
+        return 'Kedipkan kedua mata dengan jelas satu kali.';
+      }
+      if (message.includes('KIRI') || message.includes('KANAN')) {
+        return 'Gerakkan kepala perlahan sesuai arah yang ditampilkan.';
+      }
+      if (message.includes('Kembali')) {
+        return 'Kembalikan wajah ke posisi lurus menghadap kamera.';
+      }
+      if (message.includes('berhasil')) {
+        return 'Tahap liveness selesai.';
+      }
+      return 'Ikuti petunjuk pada layar.';
+    }
+
+    /* ============================================================
+       DESCRIPTOR & SNAPSHOT
+       ============================================================ */
+
+    async function captureDescriptor(videoEl) {
+      const options = new faceapi.TinyFaceDetectorOptions({
+        inputSize: 224,
+        scoreThreshold: 0.50
+      });
+
+      // Liveness sudah memastikan hanya satu wajah.
+      // detectSingleFace lebih ringan daripada detectAllFaces untuk tahap akhir.
+      const detection = await faceapi
+        .detectSingleFace(videoEl, options)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      if (!detection) {
+        throw new Error('Wajah tidak terdeteksi saat mengambil data akhir. Tetap melihat kamera lalu coba lagi.');
+      }
+
+      return detection.descriptor;
+    }
+
+    function captureVideoSnapshot(videoEl) {
+      const size = 240;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      canvas.width = size;
+      canvas.height = size;
+
+      const vw = videoEl.videoWidth || 640;
+      const vh = videoEl.videoHeight || 480;
+
+      const sourceSize = Math.min(vw, vh);
+      const sx = (vw - sourceSize) / 2;
+      const sy = (vh - sourceSize) / 2;
+
+      // Karena video depan ditampilkan mirror, snapshot juga dibuat mirror
+      // supaya hasil yang ditampilkan sama dengan yang dilihat pengguna.
+      ctx.save();
+      ctx.translate(size, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(
+        videoEl,
+        sx, sy, sourceSize, sourceSize,
+        0, 0, size, size
+      );
+      ctx.restore();
+
+      return canvas.toDataURL('image/jpeg', 0.78);
     }
 
     function descriptorDistance(a, b) {
       let sum = 0;
+
       for (let i = 0; i < a.length; i++) {
         const d = Number(a[i]) - Number(b[i]);
         sum += d * d;
       }
+
       return Math.sqrt(sum);
     }
 
     function averagePairwiseDistance(samples) {
       if (!samples || samples.length < 2) return 0;
+
       let total = 0;
       let count = 0;
+
       for (let i = 0; i < samples.length; i++) {
         for (let j = i + 1; j < samples.length; j++) {
           total += descriptorDistance(samples[i], samples[j]);
           count++;
         }
       }
+
       return count ? total / count : 0;
+    }
+
+    /* ============================================================
+       PROGRESS RING
+       ============================================================ */
+
+    function initProgressRings() {
+      ['Absen', 'Daftar'].forEach(suffix => {
+        const circle = $(`progress${suffix}`);
+        if (!circle) return;
+
+        const radius = Number(circle.getAttribute('r'));
+        const circumference = 2 * Math.PI * radius;
+
+        circle.dataset.circumference = String(circumference);
+        circle.style.strokeDasharray = `${circumference} ${circumference}`;
+        circle.style.strokeDashoffset = String(circumference);
+        circle.style.opacity = '0';
+      });
     }
 
     function setScanProgress(type, value, success = false) {
@@ -1244,7 +1942,19 @@
       if (!circle || !successEl) return;
 
       const progress = clamp_(Number(value) || 0, 0, 100);
-      circle.style.strokeDashoffset = String(100 - progress);
+      const circumference = Number(circle.dataset.circumference) || (2 * Math.PI * 88);
+      const offset = circumference * (1 - (progress / 100));
+
+      // 0% benar-benar tanpa garis biru.
+      if (progress <= 0) {
+        circle.style.opacity = '0';
+        circle.style.strokeDashoffset = String(circumference);
+      } else {
+        circle.style.opacity = '1';
+        circle.style.strokeDashoffset = String(offset);
+      }
+
+      // Centang hanya muncul setelah ring 100% penuh.
       successEl.classList.toggle('show', success === true && progress >= 100);
     }
 
@@ -1252,20 +1962,49 @@
       setScanProgress(type, 0, false);
     }
 
+    /* ============================================================
+       UI HELPERS
+       ============================================================ */
+
     function setBusy(value) {
       state.busy = value;
       refreshButtons();
     }
 
     function refreshButtons() {
-      $('btnCameraAbsen').disabled = state.busy || !state.modelsReady || !!state.streamAbsen;
-      $('btnStopAbsen').disabled = state.busy || !state.streamAbsen;
-      $('btnVerifikasi').disabled = state.busy || !state.modelsReady || !state.streamAbsen;
+      const attendanceLocked =
+        state.busy ||
+        state.attendancePhase !== 'IDLE';
+
+      $('segmentMasuk').disabled = attendanceLocked;
+      $('segmentPulang').disabled = attendanceLocked;
+
+      $('btnScanQr').disabled =
+        state.busy ||
+        !state.modelsReady ||
+        state.attendancePhase !== 'IDLE';
+
+      $('btnBatalAbsen').disabled =
+        state.attendancePhase === 'IDLE' &&
+        !state.streamAbsen;
 
       $('btnCekGuru').disabled = state.busy;
-      $('btnCameraDaftar').disabled = state.busy || !state.modelsReady || !state.daftarValidated || !!state.streamDaftar;
-      $('btnStopDaftar').disabled = state.busy || !state.streamDaftar;
-      $('btnRekamWajah').disabled = state.busy || !state.modelsReady || !state.daftarValidated || !state.streamDaftar;
+
+      $('btnCameraDaftar').disabled =
+        state.busy ||
+        !state.modelsReady ||
+        !state.daftarValidated ||
+        !!state.streamDaftar;
+
+      $('btnStopDaftar').disabled =
+        state.busy ||
+        !state.streamDaftar;
+
+      $('btnRekamWajah').disabled =
+        state.busy ||
+        !state.modelsReady ||
+        !state.daftarValidated ||
+        !state.streamDaftar;
     }
 
     function showStatus(id, type, message) {
@@ -1282,8 +2021,24 @@
 
     function hideResult() {
       $('resultAbsen').classList.remove('show');
+      $('resultPhoto').removeAttribute('src');
       $('resultNama').textContent = '';
       $('resultMeta').textContent = '';
+    }
+
+    function median_(values) {
+      if (!values || !values.length) return 0;
+
+      const sorted = [...values].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+
+      return sorted.length % 2
+        ? sorted[mid]
+        : (sorted[mid - 1] + sorted[mid]) / 2;
+    }
+
+    function clamp_(value, min, max) {
+      return Math.min(max, Math.max(min, value));
     }
   </script>
 </body>
