@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#f5f7fb" />
-  <title>Absensi Guru - Face Detection V5</title>
+  <title>Absensi Guru - Face Detection V6</title>
 
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
@@ -43,20 +43,43 @@
     .scan-ring{position:absolute;left:50%;top:50%;width:min(60%,310px);aspect-ratio:1/1;transform:translate(-50%,-50%);z-index:4;display:none;pointer-events:none}.scan-ring.show{display:block}.scan-ring svg{width:100%;height:100%;display:block;overflow:visible}.scan-ring circle{fill:none;stroke-width:5;vector-effect:non-scaling-stroke}.scan-ring-track{stroke:var(--track);opacity:.90}.scan-ring-progress{stroke:var(--primary2);stroke-linecap:butt;transition:stroke-dashoffset .16s linear,opacity .08s linear;filter:drop-shadow(0 0 5px rgba(103,200,255,.30));opacity:0}.scan-success{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transform:scale(.76);transition:opacity .15s ease,transform .15s ease}.scan-success.show{opacity:1;transform:scale(1)}.scan-success span{color:var(--primary2);font-size:clamp(48px,8vw,72px);font-weight:950;line-height:1;text-shadow:0 3px 13px rgba(0,35,70,.42)}
     .status{display:none;width:min(660px,100%);margin:14px auto 0;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font-size:14px;line-height:1.5;white-space:pre-line}.status.show{display:block}.status.info{color:#24498e;background:#eef4ff;border-color:#cddcff}.status.ok{color:var(--ok);background:#ecfdf3;border-color:#b7ebcc}.status.warn{color:var(--warn);background:#fff8e7;border-color:#f3d98f}.status.error{color:var(--danger);background:#fff1f0;border-color:#f2c4bf}
     .qr-result{display:none;width:min(660px,100%);margin:14px auto 0;padding:14px 16px;border:1px solid #cfe0fb;border-radius:15px;background:#f4f8ff}.qr-result.show{display:block}.qr-result small{display:block;margin-bottom:3px;color:var(--muted);font-weight:750}.qr-result strong{display:block;color:var(--primary);font-size:19px}
-    .result-card{display:none;width:min(660px,100%);margin:16px auto 0;padding:15px;border:1px solid #b7ebcc;border-radius:18px;background:#effdf5}.result-card.show{display:block}.result-heading{margin-bottom:12px;text-align:center}.result-label{color:var(--ok);font-size:12px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}.result-name{margin-top:3px;font-size:21px;font-weight:950}.result-meta{margin-top:4px;color:#496558;font-size:14px}.photo-compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}.photo-box{min-width:0;text-align:center}.photo-frame{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;border-radius:15px;border:2px solid #c7ecd6;background:#e9eef5}.photo-frame img{width:100%;height:100%;display:block;object-fit:cover}.photo-placeholder{position:absolute;inset:0;display:grid;place-items:center;padding:10px;color:#718096;font-size:12px}.photo-caption{margin-top:6px;color:#516074;font-size:12px;font-weight:850}.hint{margin-top:16px;padding:12px 13px;border:1px dashed #ccd5e2;border-radius:14px;background:#f8fafc;color:var(--muted);font-size:13px;line-height:1.55}footer{padding:19px 10px 2px;text-align:center;color:#7a8799;font-size:12px;font-weight:750}
+    .result-card{display:none}
+    .camera-result{position:absolute;inset:0;z-index:8;display:none;padding:12px 14px 10px;background:linear-gradient(180deg,#effdf5 0%,#f8fffb 100%);color:var(--text)}
+    .camera-result.show{display:flex;flex-direction:column}
+    .camera-result-head{text-align:center;flex:0 0 auto;margin-bottom:8px;line-height:1.18}
+    .camera-result-label{color:var(--ok);font-size:11px;font-weight:950;letter-spacing:.05em;text-transform:uppercase}
+    .camera-result-name{margin-top:2px;font-size:clamp(16px,2.8vw,22px);font-weight:950}
+    .camera-result-meta{margin-top:2px;color:#496558;font-size:12px;font-weight:750}
+    .camera-photo-compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0;flex:1;align-items:center;justify-items:center}
+    .camera-photo-box{display:flex;min-width:0;min-height:0;height:100%;flex-direction:column;align-items:center;justify-content:center}
+    .camera-photo-frame{position:relative;height:min(82%,360px);max-width:100%;aspect-ratio:3/4;overflow:hidden;border-radius:13px;border:2px solid #bfe7cf;background:#e8eef5}
+    .camera-photo-frame img{width:100%;height:100%;display:block;object-fit:cover}
+    .photo-placeholder{position:absolute;inset:0;display:grid;place-items:center;padding:10px;color:#718096;font-size:12px;text-align:center}
+    .photo-caption{margin-top:4px;color:#516074;font-size:11px;font-weight:850;white-space:nowrap}
+    .standalone-page{display:none;min-height:100vh;background:var(--bg)}
+    .standalone-page.show{display:block}
+    .admin-login-page{padding:22px 14px}
+    .login-page-inner{width:min(480px,100%);margin:0 auto;padding-top:min(10vh,90px)}
+    .login-back{margin-bottom:14px}
+    .login-card{padding:24px;border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:var(--shadow)}
+    .login-brand{margin-bottom:18px}.login-brand h2{margin:0 0 5px;font-size:25px}.login-brand p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+    .admin-dashboard-page{padding:18px}
+    .edit-guru-modal .modal-card{width:min(500px,100%)}
+    .hint{margin-top:16px;padding:12px 13px;border:1px dashed #ccd5e2;border-radius:14px;background:#f8fafc;color:var(--muted);font-size:13px;line-height:1.55}
+    footer{padding:19px 10px 2px;text-align:center;color:#7a8799;font-size:12px;font-weight:750}
     .overlay{position:fixed;inset:0;z-index:100;display:none;overflow:auto;background:rgba(14,24,39,.46);backdrop-filter:blur(6px);padding:18px}.overlay.show{display:block}.modal-card{width:min(430px,100%);margin:8vh auto 0;padding:22px;border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:0 22px 70px rgba(8,22,45,.26)}.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}.modal-head h2{margin:0 0 4px;font-size:22px}.modal-head p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}.icon-btn{appearance:none;border:1px solid #dce4ee;background:#fff;color:#526177;border-radius:10px;width:38px;height:38px;cursor:pointer;font-size:18px}
     .admin-shell{width:min(1180px,100%);min-height:calc(100vh - 36px);margin:0 auto;border:1px solid #d9e2ec;border-radius:20px;background:#f7f9fc;box-shadow:0 24px 78px rgba(8,22,45,.30);overflow:hidden}.admin-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;background:#fff;border-bottom:1px solid #e1e7ef}.admin-head strong{display:block;font-size:18px}.admin-head small{color:var(--muted)}.admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 110px)}.admin-nav{padding:16px 12px;border-right:1px solid #e1e7ef;background:#fff}.admin-nav button{width:100%;appearance:none;border:0;border-radius:11px;background:transparent;color:#4d5b70;padding:11px 12px;margin-bottom:5px;text-align:left;font-weight:850;cursor:pointer}.admin-nav button.active{color:var(--primary);background:#edf4ff}.admin-content{padding:20px;overflow:auto}.admin-page{display:none}.admin-page.active{display:block}
     .admin-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}.admin-title-row h2{margin:0 0 4px;font-size:22px}.admin-title-row p{margin:0;color:var(--muted);font-size:13px}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.stat-card{padding:16px;border:1px solid var(--line);border-radius:16px;background:#fff}.stat-card small{color:var(--muted);font-weight:800}.stat-card strong{display:block;margin-top:5px;color:var(--primary);font-size:28px}.admin-card{margin-bottom:16px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fff}.admin-card h3{margin:0 0 12px;font-size:17px}.table-wrap{width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:#fff}table{width:100%;border-collapse:collapse;min-width:720px}th,td{padding:10px 11px;border-bottom:1px solid #e7ecf2;text-align:left;vertical-align:middle;font-size:13px}th{background:#f5f8fc;color:#516074;font-size:12px;font-weight:900;white-space:nowrap}tr:last-child td{border-bottom:0}.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:850;white-space:nowrap}.badge.ok{background:#eaf9f0;color:var(--ok)}.badge.warn{background:#fff6df;color:var(--warn)}.badge.muted{background:#edf1f6;color:#657288}.mini-actions{display:flex;flex-wrap:wrap;gap:6px}.mini-btn{appearance:none;border:1px solid #d8e0ea;border-radius:9px;background:#fff;color:#425168;padding:6px 9px;font-size:11px;font-weight:800;cursor:pointer}.mini-btn.danger{border-color:#f0c8c4;color:var(--danger);background:#fff7f6}.admin-form-grid{display:grid;grid-template-columns:1fr 1.4fr .7fr;gap:10px}.admin-form-grid .field input,.admin-form-grid .field select{padding:10px 11px}.admin-toolbar{display:flex;flex-wrap:wrap;align-items:end;gap:10px;margin-bottom:12px}.admin-toolbar .field{min-width:180px}.admin-camera{width:min(580px,100%);margin:0 auto}.admin-camera .camera-box{width:100%}
     .crop-shell{width:min(760px,100%);margin:2vh auto 0;padding:18px;border-radius:20px;background:#fff;border:1px solid var(--line);box-shadow:0 22px 70px rgba(8,22,45,.28)}.crop-layout{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:18px;align-items:start}.crop-canvas-wrap{width:min(360px,100%);aspect-ratio:3/4;margin:0 auto;border-radius:14px;overflow:hidden;background:#121a27;border:1px solid #26354d;touch-action:none}#cropCanvas{width:100%;height:100%;display:block;cursor:grab;touch-action:none}#cropCanvas.dragging{cursor:grabbing}.crop-controls{padding:8px 2px}.range-row{margin:14px 0}.range-row label{display:flex;justify-content:space-between;gap:10px;color:#4e5d72;font-size:13px;font-weight:850;margin-bottom:7px}input[type="range"]{width:100%}.crop-info{padding:11px 12px;border-radius:12px;background:#f5f8fc;color:var(--muted);font-size:12px;line-height:1.5}.pdf-preview-note{color:var(--muted);font-size:12px;line-height:1.5}
     @media(min-width:900px){.hero{padding:27px 34px}.panel{padding:30px 38px}.camera-box{min-height:470px}}
     @media(max-width:850px){.hero-grid{grid-template-columns:1fr}.digital-clock{width:100%;min-width:0;text-align:left}.admin-layout{grid-template-columns:1fr}.admin-nav{display:flex;overflow-x:auto;gap:6px;border-right:0;border-bottom:1px solid #e1e7ef}.admin-nav button{width:auto;flex:0 0 auto;white-space:nowrap}.stats{grid-template-columns:1fr 1fr}.crop-layout{grid-template-columns:1fr}}
-    @media(max-width:640px){.app{width:min(100% - 18px,1040px);padding-top:10px}.hero,.panel{border-radius:17px}.hero{padding:18px 16px}.panel{padding:18px 14px}.field-grid,.admin-form-grid,.stepbar{grid-template-columns:1fr}.camera-box{width:100%;aspect-ratio:4/3;border-radius:17px}.scan-ring{width:min(64%,285px)}.actions{display:grid;grid-template-columns:1fr}button.action{width:100%}.photo-compare{gap:8px}.photo-caption{font-size:11px}.stats{grid-template-columns:1fr 1fr}.overlay{padding:8px}.admin-shell{min-height:calc(100vh - 16px);border-radius:15px}.admin-head{padding:13px}.admin-content{padding:13px}}
+    @media(max-width:640px){.app{width:min(100% - 18px,1040px);padding-top:10px}.hero,.panel{border-radius:17px}.hero{padding:18px 16px}.panel{padding:18px 14px}.field-grid,.admin-form-grid,.stepbar{grid-template-columns:1fr}.camera-box{width:100%;aspect-ratio:4/3;border-radius:17px}.scan-ring{width:min(64%,285px)}.actions{display:grid;grid-template-columns:1fr}button.action{width:100%}.camera-photo-compare{gap:7px}.camera-photo-frame{height:min(78%,250px)}.photo-caption{font-size:10px}.stats{grid-template-columns:1fr 1fr}.overlay{padding:8px}.admin-shell{min-height:calc(100vh - 16px);border-radius:15px}.admin-head{padding:13px}.admin-content{padding:13px}}
   </style>
 </head>
 <body>
-  <main class="app">
+  <main id="mainApp" class="app">
     <div class="topbar">
-      <div class="version-chip">● Secure QR + Face V5</div>
+      <div class="version-chip">● Secure QR + Face V6</div>
       <button id="btnAdminTop" class="admin-top-btn">Admin</button>
     </div>
     <section class="hero">
@@ -74,10 +97,6 @@
         </div>
       </div>
     </section>
-    <nav class="tabs" aria-label="Menu utama">
-      <button class="tab active" data-tab="absen">Absensi</button>
-      <button class="tab" data-tab="daftar">Daftar / Rekam Wajah</button>
-    </nav>
     <section id="panel-absen" class="panel active">
       <div class="vertical-flow">
         <h2 class="section-title">Absensi QR ID & Wajah</h2>
@@ -109,6 +128,30 @@
             </svg>
             <div id="successAbsen" class="scan-success"><span>✓</span></div>
           </div>
+
+          <div id="cameraResult" class="camera-result" aria-live="polite">
+            <div class="camera-result-head">
+              <div class="camera-result-label">Wajah Cocok • Absensi Berhasil</div>
+              <div id="resultNama" class="camera-result-name"></div>
+              <div id="resultMeta" class="camera-result-meta"></div>
+            </div>
+            <div class="camera-photo-compare">
+              <div class="camera-photo-box">
+                <div class="camera-photo-frame">
+                  <img id="profilePhotoResult" alt="Foto profil guru" hidden />
+                  <div id="profilePhotoPlaceholder" class="photo-placeholder">Memuat foto profil…</div>
+                </div>
+                <div class="photo-caption">Foto Profil 360×480</div>
+              </div>
+              <div class="camera-photo-box">
+                <div class="camera-photo-frame">
+                  <img id="scanPhotoResult" alt="Foto hasil scan wajah" />
+                </div>
+                <div class="photo-caption">Hasil Scan 360×480</div>
+              </div>
+            </div>
+          </div>
+
           <div id="modeAbsen" class="mode-label">Siap</div>
         </div>
         <div id="statusAbsen" class="status"></div>
@@ -116,76 +159,36 @@
           <button id="btnRetryFace" class="action primary">Coba Lagi Wajah</button>
           <button id="btnRetryCancel" class="action danger">Batalkan</button>
         </div>
-        <div id="resultAbsen" class="result-card">
-          <div class="result-heading">
-            <div class="result-label">Wajah cocok</div>
-            <div id="resultNama" class="result-name"></div>
-            <div id="resultMeta" class="result-meta"></div>
-          </div>
-          <div class="photo-compare">
-            <div class="photo-box">
-              <div class="photo-frame">
-                <img id="profilePhotoResult" alt="Foto profil guru" hidden />
-                <div id="profilePhotoPlaceholder" class="photo-placeholder">Memuat foto profil…</div>
-              </div>
-              <div class="photo-caption">Foto Profil 360×480</div>
-            </div>
-            <div class="photo-box">
-              <div class="photo-frame"><img id="scanPhotoResult" alt="Foto hasil scan wajah" /></div>
-              <div class="photo-caption">Hasil Scan 360×480</div>
-            </div>
-          </div>
-        </div>
         <div class="hint">QR hanya menentukan identitas awal. Keputusan akhir tetap dilakukan backend berdasarkan sesi QR, tantangan liveness, serta beberapa sampel biometrik wajah. Nilai teknis jarak wajah tidak ditampilkan kepada pengguna.</div>
       </div>
     </section>
 
-    <section id="panel-daftar" class="panel">
-      <div class="vertical-flow">
-        <h2 class="section-title">Pendaftaran Wajah</h2>
-        <p class="section-desc">Guru yang memiliki ID dan kode registrasi dapat mendaftarkan <b>5 sampel wajah</b>. Admin juga dapat merekam wajah guru melalui Dashboard Admin.</p>
-        <div class="field-grid">
-          <div class="field"><label for="daftarId">ID Guru</label><input id="daftarId" autocomplete="off" placeholder="Contoh: GURU001" /></div>
-          <div class="field"><label for="kodeRegistrasi">Kode Registrasi</label><input id="kodeRegistrasi" type="password" autocomplete="one-time-code" inputmode="numeric" placeholder="Kode dari admin" /></div>
-        </div>
-        <div class="actions"><button id="btnCekGuru" class="action secondary">Cek Data Guru</button></div>
-        <div id="statusDaftar" class="status"></div>
-        <div class="scan-instruction"><strong id="instructionDaftarTitle">Verifikasi data guru terlebih dahulu</strong><span id="instructionDaftarDetail">Setelah identitas valid, aktifkan kamera dan ikuti petunjuk.</span></div>
-        <div class="camera-box">
-          <video id="videoDaftar" class="mirror" autoplay muted playsinline></video>
-          <div id="cameraOffDaftar" class="camera-off">Kamera belum aktif</div>
-          <div id="scanRingDaftar" class="scan-ring show" aria-hidden="true">
-            <svg viewBox="0 0 200 200"><circle class="scan-ring-track" cx="100" cy="100" r="88"></circle><circle id="progressDaftar" class="scan-ring-progress" cx="100" cy="100" r="88" transform="rotate(-90 100 100)"></circle></svg>
-            <div id="successDaftar" class="scan-success"><span>✓</span></div>
-          </div>
-          <div id="modeDaftar" class="mode-label">Belum diverifikasi</div>
-        </div>
-        <div class="actions">
-          <button id="btnCameraDaftar" class="action secondary" disabled>Aktifkan Kamera</button>
-          <button id="btnRekamWajah" class="action primary" disabled>Rekam 5 Sampel Wajah</button>
-          <button id="btnStopDaftar" class="action danger" disabled>Matikan Kamera</button>
-        </div>
-        <div class="hint">Gunakan pencahayaan cukup. Lima sampel digunakan untuk membentuk profil wajah yang lebih stabil sehingga sistem tidak hanya bergantung pada satu sampel terbaik.</div>
-      </div>
-    </section>
-    <footer>Absen Face Detection by Gurukemarinsore V5</footer>
+    <footer>Absen Face Detection by Gurukemarinsore V6</footer>
   </main>
 
-  <div id="adminLoginOverlay" class="overlay">
-    <div class="modal-card">
-      <div class="modal-head"><div><h2>Login Admin</h2><p>Password tidak disimpan di index.html. Validasi dilakukan oleh backend.</p></div><button id="btnCloseAdminLogin" class="icon-btn" aria-label="Tutup">×</button></div>
-      <div class="field"><label for="adminUsername">Username</label><input id="adminUsername" autocomplete="username" value="admin" /></div>
-      <div class="field" style="margin-top:12px"><label for="adminPassword">Password</label><input id="adminPassword" type="password" autocomplete="current-password" /></div>
-      <div class="actions"><button id="btnAdminLogin" class="action primary">Login</button></div>
-      <div id="adminLoginStatus" class="status"></div>
+  <section id="adminLoginPage" class="standalone-page admin-login-page">
+    <div class="login-page-inner">
+      <div class="login-back">
+        <button id="btnBackFromAdminLogin" class="action outline">← Kembali ke Absensi</button>
+      </div>
+      <div class="login-card">
+        <div class="login-brand">
+          <h2>Login Admin</h2>
+          <p>Masuk untuk mengelola data guru, foto profil, perekaman wajah, absensi, dan QR. Password divalidasi oleh backend dan tidak disimpan di index.html.</p>
+        </div>
+        <div class="field"><label for="adminUsername">Username</label><input id="adminUsername" autocomplete="username" value="admin" /></div>
+        <div class="field" style="margin-top:12px"><label for="adminPassword">Password</label><input id="adminPassword" type="password" autocomplete="current-password" /></div>
+        <div class="actions"><button id="btnAdminLogin" class="action primary">Login Admin</button></div>
+        <div id="adminLoginStatus" class="status"></div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div id="adminDashboardOverlay" class="overlay">
+  <div id="adminDashboardOverlay" class="standalone-page admin-dashboard-page">
     <div class="admin-shell">
       <div class="admin-head">
-        <div><strong>Dashboard Admin V5</strong><small id="adminIdentity">—</small></div>
-        <div class="actions" style="margin:0"><button id="btnAdminLogout" class="action outline">Logout</button><button id="btnCloseAdminDashboard" class="icon-btn" aria-label="Tutup">×</button></div>
+        <div><strong>Dashboard Admin V6</strong><small id="adminIdentity">—</small></div>
+        <div class="actions" style="margin:0"><button id="btnCloseAdminDashboard" class="action outline">← Absensi</button><button id="btnAdminLogout" class="action danger">Logout</button></div>
       </div>
       <div class="admin-layout">
         <nav class="admin-nav">
@@ -210,14 +213,13 @@
           <section id="adminPage-guru" class="admin-page">
             <div class="admin-title-row"><div><h2>Data Guru</h2><p>Tambah, edit, foto, status, dan biometrik guru.</p></div><button id="btnRefreshGuru" class="action secondary">Refresh</button></div>
             <div class="admin-card">
-              <h3>Tambah / Edit Guru</h3>
+              <h3>Tambah Guru</h3>
               <div class="admin-form-grid">
                 <div class="field"><label for="adminGuruId">ID Guru</label><input id="adminGuruId" placeholder="GURU001" /></div>
                 <div class="field"><label for="adminGuruNama">Nama</label><input id="adminGuruNama" placeholder="Nama lengkap guru" /></div>
                 <div class="field"><label for="adminGuruStatus">Status</label><select id="adminGuruStatus"><option value="YA">AKTIF</option><option value="TIDAK">NONAKTIF</option></select></div>
               </div>
-              <input id="adminGuruOriginalId" type="hidden" />
-              <div class="actions"><button id="btnSaveGuru" class="action primary">Simpan Guru</button><button id="btnClearGuruForm" class="action secondary">Form Baru</button></div>
+              <div class="actions"><button id="btnSaveGuru" class="action primary">Tambah Guru</button><button id="btnClearGuruForm" class="action secondary">Kosongkan Form</button></div>
             </div>
             <div class="table-wrap"><table><thead><tr><th>ID</th><th>Nama</th><th>Status</th><th>Wajah</th><th>Foto</th><th>QR</th><th>Aksi</th></tr></thead><tbody id="guruTableBody"></tbody></table></div>
             <input id="adminPhotoFile" type="file" accept="image/jpeg,image/png,image/webp" hidden />
@@ -273,6 +275,23 @@
     </div>
   </div>
 
+  <div id="editGuruOverlay" class="overlay edit-guru-modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h2>Edit Data Guru</h2>
+          <p>Ubah nama atau status guru. ID Guru dikunci agar referensi QR, biometrik, dan log tetap konsisten.</p>
+        </div>
+        <button id="btnCloseEditGuru" class="icon-btn" aria-label="Tutup">×</button>
+      </div>
+      <div class="field"><label for="editGuruId">ID Guru</label><input id="editGuruId" readonly /></div>
+      <div class="field" style="margin-top:10px"><label for="editGuruNama">Nama</label><input id="editGuruNama" /></div>
+      <div class="field" style="margin-top:10px"><label for="editGuruStatus">Status</label><select id="editGuruStatus"><option value="YA">AKTIF</option><option value="TIDAK">NONAKTIF</option></select></div>
+      <div class="actions"><button id="btnCancelEditGuru" class="action secondary">Batal</button><button id="btnSaveEditGuru" class="action primary">Simpan Perubahan</button></div>
+      <div id="editGuruStatusMessage" class="status"></div>
+    </div>
+  </div>
+
   <div id="cropOverlay" class="overlay">
     <div class="crop-shell">
       <div class="modal-head"><div><h2>Preview & Crop Foto</h2><p>Rasio dikunci 3:4. Geser foto dan atur zoom sebelum disimpan sebagai 360×480 px.</p></div><button id="btnCloseCrop" class="icon-btn">×</button></div>
@@ -298,23 +317,21 @@
     const APP_TIMEZONE='Asia/Jayapura', PHOTO_WIDTH=360, PHOTO_HEIGHT=480;
     const state={
       modelsReady:false,faceLandmarker:null,lastMediaPipeTimestamp:0,
-      streamAbsen:null,streamDaftar:null,streamAdminEnroll:null,
+      streamAbsen:null,streamAdminEnroll:null,
       attendanceType:'MASUK',attendancePhase:'IDLE',qrScanActive:false,qrSession:'',qrName:'',challengeDirection:'',successfulSnapshot:'',
-      daftarValidated:false,daftarNama:'',
-      adminSession:sessionStorage.getItem('absenAdminSessionV5')||'',adminUser:'',adminName:'',adminGuruList:[],adminSelectedPhotoGuruId:'',adminBusy:false,
+      adminSession:sessionStorage.getItem('absenAdminSessionV6')||'',adminUser:'',adminName:'',adminGuruList:[],adminSelectedPhotoGuruId:'',adminBusy:false,
       crop:{image:null,guruId:'',zoom:1,baseScale:1,panX:0,panY:0,dragging:false,pointerId:null,startX:0,startY:0,startPanX:0,startPanY:0},
       busy:false
     };
     const $=id=>document.getElementById(id), sleep=ms=>new Promise(r=>setTimeout(r,ms));
-    window.addEventListener('DOMContentLoaded',()=>{bindUI();initProgressRings();startDigitalClock();resetAttendanceFlow();resetScanProgress('daftar');resetScanProgress('admin');setAdminAttendanceDateToday();waitForLibrariesAndLoadModels()});
+    window.addEventListener('DOMContentLoaded',()=>{bindUI();initProgressRings();startDigitalClock();resetAttendanceFlow();resetScanProgress('admin');setAdminAttendanceDateToday();waitForLibrariesAndLoadModels()});
     function bindUI(){
-      document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
       $('segmentMasuk').onclick=()=>setAttendanceType('MASUK'); $('segmentPulang').onclick=()=>setAttendanceType('PULANG');
       $('btnScanQr').onclick=startQrAttendance; $('btnBatalAbsen').onclick=()=>resetAttendanceFlow(); $('btnRetryFace').onclick=retryFaceOnly; $('btnRetryCancel').onclick=()=>resetAttendanceFlow();
-      $('btnCekGuru').onclick=cekGuruUntukRegistrasi; $('btnCameraDaftar').onclick=startCameraDaftar; $('btnStopDaftar').onclick=()=>stopCameraDaftar(); $('btnRekamWajah').onclick=rekamWajah; $('daftarId').oninput=resetValidasiDaftar; $('kodeRegistrasi').oninput=resetValidasiDaftar;
-      $('btnAdminTop').onclick=openAdmin; $('btnCloseAdminLogin').onclick=closeAdminLogin; $('btnAdminLogin').onclick=adminLogin; $('adminPassword').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin()}); $('btnAdminLogout').onclick=adminLogout; $('btnCloseAdminDashboard').onclick=closeAdminDashboard;
+      $('btnAdminTop').onclick=openAdmin; $('btnBackFromAdminLogin').onclick=backToAttendance; $('btnAdminLogin').onclick=adminLogin; $('adminPassword').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin()}); $('btnAdminLogout').onclick=adminLogout; $('btnCloseAdminDashboard').onclick=backToAttendance;
       document.querySelectorAll('.admin-nav-btn').forEach(b=>b.onclick=()=>openAdminPage(b.dataset.adminPage));
       $('btnRefreshDashboard').onclick=loadAdminDashboard; $('btnRefreshGuru').onclick=loadAdminGuruList; $('btnSaveGuru').onclick=adminSaveGuru; $('btnClearGuruForm').onclick=clearAdminGuruForm; $('adminPhotoFile').onchange=handleAdminPhotoFile;
+      $('btnCloseEditGuru').onclick=closeEditGuruModal; $('btnCancelEditGuru').onclick=closeEditGuruModal; $('btnSaveEditGuru').onclick=saveEditGuru;
       $('adminEnrollGuruSelect').onchange=updateAdminEnrollSelection; $('btnAdminCameraEnroll').onclick=startAdminEnrollCamera; $('btnAdminCaptureEnroll').onclick=adminCaptureFace; $('btnAdminStopEnroll').onclick=()=>stopAdminEnrollCamera();
       $('btnLoadAttendance').onclick=loadAdminAttendance; $('btnSelectAllQr').onclick=()=>setAllQrSelection(true); $('btnClearQrSelection').onclick=()=>setAllQrSelection(false); $('btnGenerateQrPdf').onclick=generateQrPdf; $('btnChangeAdminPassword').onclick=adminChangePassword;
       $('btnCloseCrop').onclick=closeCropModal; $('btnCancelCrop').onclick=closeCropModal; $('btnResetCrop').onclick=resetCrop; $('btnSaveCrop').onclick=saveCroppedPhoto; $('cropZoom').oninput=updateCropZoom;
@@ -325,27 +342,68 @@
     function setAdminAttendanceDateToday(){const p=new Intl.DateTimeFormat('en-CA',{timeZone:APP_TIMEZONE,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),m={};p.forEach(x=>m[x.type]=x.value);$('adminAttendanceDate').value=`${m.year}-${m.month}-${m.day}`}
     async function waitForLibrariesAndLoadModels(){try{state.modelsReady=false;refreshButtons();refreshAdminEnrollButtons();$('modelStatus').textContent='Memuat kamera, face-api.js, QR scanner, dan MediaPipe…';let a=0;while((!window.faceapi||!window.jsQR)&&a<150){await sleep(100);a++}if(!window.faceapi||!window.jsQR)throw new Error('Library kamera/wajah utama gagal dimuat.');const mp=import(MEDIAPIPE_MODULE_URL);$('modelStatus').textContent='Memuat model pengenalan wajah…';await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL),faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL),faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL)]);$('modelStatus').textContent='Menyiapkan liveness MediaPipe…';const vm=await mp,vision=await vm.FilesetResolver.forVisionTasks(MEDIAPIPE_WASM_URL),common={baseOptions:{modelAssetPath:MEDIAPIPE_FACE_MODEL_URL},runningMode:'VIDEO',numFaces:2,minFaceDetectionConfidence:.5,minFacePresenceConfidence:.5,minTrackingConfidence:.5,outputFaceBlendshapes:true};try{state.faceLandmarker=await vm.FaceLandmarker.createFromOptions(vision,{...common,baseOptions:{modelAssetPath:MEDIAPIPE_FACE_MODEL_URL,delegate:'GPU'}})}catch(e){console.warn('MediaPipe GPU fallback CPU',e);state.faceLandmarker=await vm.FaceLandmarker.createFromOptions(vision,common)}state.modelsReady=true;$('modelStatus').textContent='Kamera dan model wajah siap digunakan.';refreshButtons();refreshAdminEnrollButtons()}catch(e){console.error(e);state.modelsReady=false;state.faceLandmarker=null;$('modelStatus').textContent='Gagal memuat kamera/model wajah: '+e.message;showStatus('statusAbsen','error','Komponen kamera/wajah gagal dimuat. Muat ulang halaman dan periksa internet.');refreshButtons();refreshAdminEnrollButtons()}}
     function apiReady(){return GAS_WEB_APP_URL.startsWith('https://script.google.com/macros/s/')&&GAS_WEB_APP_URL.endsWith('/exec')}
-    async function callApi(action,payload={},timeoutMs=25000){if(!apiReady())throw new Error('URL Apps Script tidak valid.');const c=new AbortController(),t=setTimeout(()=>c.abort(),timeoutMs);try{const r=await fetch(GAS_WEB_APP_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...payload}),signal:c.signal});if(!r.ok)throw new Error('HTTP '+r.status);const tx=await r.text();let d;try{d=JSON.parse(tx)}catch{throw new Error('Respons backend bukan JSON. Deploy Code.gs V5 terbaru.')}if(!d.ok){const e=new Error(d.message||'Permintaan ditolak backend.');e.code=d.code||'API_ERROR';e.data=d;throw e}return d}catch(e){if(e.name==='AbortError')throw new Error('Backend terlalu lama merespons.');throw e}finally{clearTimeout(t)}}
-    async function adminApi(action,payload={},timeoutMs=25000){if(!state.adminSession){const e=new Error('Sesi admin tidak tersedia.');e.code='ADMIN_SESSION_REQUIRED';throw e}try{return await callApi(action,{adminSession:state.adminSession,...payload},timeoutMs)}catch(e){if(['ADMIN_SESSION_EXPIRED','ADMIN_SESSION_REQUIRED'].includes(e.code)){sessionStorage.removeItem('absenAdminSessionV5');state.adminSession='';closeAdminDashboard();openAdminLogin()}throw e}}
+    async function callApi(action,payload={},timeoutMs=25000){if(!apiReady())throw new Error('URL Apps Script tidak valid.');const c=new AbortController(),t=setTimeout(()=>c.abort(),timeoutMs);try{const r=await fetch(GAS_WEB_APP_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...payload}),signal:c.signal});if(!r.ok)throw new Error('HTTP '+r.status);const tx=await r.text();let d;try{d=JSON.parse(tx)}catch{throw new Error('Respons backend bukan JSON. Deploy Code.gs V6 terbaru.')}if(!d.ok){const e=new Error(d.message||'Permintaan ditolak backend.');e.code=d.code||'API_ERROR';e.data=d;throw e}return d}catch(e){if(e.name==='AbortError')throw new Error('Backend terlalu lama merespons.');throw e}finally{clearTimeout(t)}}
+    async function adminApi(action,payload={},timeoutMs=25000){if(!state.adminSession){const e=new Error('Sesi admin tidak tersedia.');e.code='ADMIN_SESSION_REQUIRED';throw e}try{return await callApi(action,{adminSession:state.adminSession,...payload},timeoutMs)}catch(e){if(['ADMIN_SESSION_EXPIRED','ADMIN_SESSION_REQUIRED'].includes(e.code)){sessionStorage.removeItem('absenAdminSessionV6');state.adminSession='';openAdminLogin()}throw e}}
     async function openCamera(video,facing){if(!navigator.mediaDevices?.getUserMedia)throw new Error('Browser tidak mendukung kamera.');const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing},width:{ideal:960},height:{ideal:720}},audio:false});video.srcObject=s;await video.play();await new Promise((res,rej)=>{if(video.readyState>=2&&video.videoWidth>0)return res();const tm=setTimeout(()=>rej(new Error('Kamera tidak siap.')),10000),fn=()=>{if(video.videoWidth>0){clearTimeout(tm);video.removeEventListener('loadeddata',fn);res()}};video.addEventListener('loadeddata',fn)});return s}
     function stopStream(s){if(s)s.getTracks().forEach(t=>t.stop())} function humanCameraError(e){if(['NotAllowedError','PermissionDeniedError'].includes(e?.name))return'Izin kamera ditolak.';if(['NotFoundError','DevicesNotFoundError'].includes(e?.name))return'Kamera tidak ditemukan.';if(['NotReadableError','TrackStartError'].includes(e?.name))return'Kamera sedang dipakai aplikasi lain.';return'Kamera gagal dibuka: '+(e?.message||'Kesalahan tidak diketahui.')}
-    function switchTab(tab){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));$('panel-absen').classList.toggle('active',tab==='absen');$('panel-daftar').classList.toggle('active',tab==='daftar');if(tab==='absen')stopCameraDaftar();else resetAttendanceFlow()}
     function setAttendanceType(type){if(state.attendancePhase!=='IDLE'||state.busy||!['MASUK','PULANG'].includes(type))return;state.attendanceType=type;$('attendanceSegment').dataset.value=type;$('segmentMasuk').classList.toggle('active',type==='MASUK');$('segmentPulang').classList.toggle('active',type==='PULANG')}
     async function startQrAttendance(){if(state.busy)return;if(!state.modelsReady)return showStatus('statusAbsen','warn','Komponen aplikasi masih dimuat.');try{setBusy(true);resetAttendanceFlow({preserveBusy:true,preserveType:true});state.attendancePhase='QR';updateAttendanceSteps('QR');$('instructionTitle').textContent='Arahkan kamera ke QR ID';$('instructionDetail').textContent='Posisikan QR di dalam kotak sampai terbaca otomatis.';$('modeAbsen').textContent='Scan QR ID';$('qrGuide').classList.add('show');$('scanRingAbsen').classList.remove('show');const v=$('videoAbsen');v.classList.remove('mirror');state.streamAbsen=await openCamera(v,'environment');$('cameraOffAbsen').style.display='none';state.qrScanActive=true;setBusy(false);await scanQrLoop()}catch(e){setBusy(false);showStatus('statusAbsen','error',humanCameraError(e));resetCameraOnlyAbsen();state.attendancePhase='IDLE';refreshButtons()}}
     async function scanQrLoop(){const v=$('videoAbsen'),c=$('qrCanvas'),x=c.getContext('2d',{willReadFrequently:true});while(state.qrScanActive&&state.attendancePhase==='QR'){if(v.readyState>=2&&v.videoWidth>0){const w=Math.min(640,v.videoWidth),sc=w/v.videoWidth,h=Math.max(1,Math.round(v.videoHeight*sc));c.width=w;c.height=h;x.drawImage(v,0,0,w,h);const im=x.getImageData(0,0,w,h),qr=jsQR(im.data,w,h,{inversionAttempts:'attemptBoth'});if(qr?.data){state.qrScanActive=false;await handleQrDetected(String(qr.data).trim());return}}await sleep(85)}}
     async function handleQrDetected(qrToken){try{setBusy(true);$('instructionTitle').textContent='QR terbaca';$('instructionDetail').textContent='Memvalidasi QR ID…';$('modeAbsen').textContent='Memvalidasi QR';const r=await callApi('RESOLVE_QR',{qrToken,jenis:state.attendanceType});state.qrName=r.nama;$('qrNama').textContent=r.nama;$('qrResult').classList.add('show');if(r.alreadyRecorded){state.attendancePhase='DONE';updateAttendanceSteps('DONE');$('instructionTitle').textContent='Absensi sudah tercatat';$('instructionDetail').textContent=r.message;$('modeAbsen').textContent='Selesai';showStatus('statusAbsen','warn',r.message);resetCameraOnlyAbsen();setBusy(false);return}state.qrSession=r.scanSession;state.challengeDirection=r.challengeDirection;updateAttendanceSteps('FACE');resetCameraOnlyAbsen();state.attendancePhase='FACE';$('instructionTitle').textContent=`QR dikenali: ${r.nama}`;$('instructionDetail').textContent='Menyiapkan kamera depan…';const v=$('videoAbsen');v.classList.add('mirror');state.streamAbsen=await openCamera(v,'user');$('cameraOffAbsen').style.display='none';$('scanRingAbsen').classList.add('show');resetScanProgress('absen');setBusy(false);await sleep(160);await verifyFaceAttendance(false)}catch(e){setBusy(false);showStatus('statusAbsen','error',e.message);resetCameraOnlyAbsen();state.attendancePhase='IDLE';state.qrSession='';state.challengeDirection='';updateAttendanceSteps('QR');refreshButtons()}}
     async function retryFaceOnly(){if(state.busy||!state.qrSession)return;try{setBusy(true);hideRetryFaceActions();hideStatus('statusAbsen');const r=await callApi('REFRESH_FACE_CHALLENGE',{scanSession:state.qrSession});state.challengeDirection=r.challengeDirection;if(!state.streamAbsen){const v=$('videoAbsen');v.classList.add('mirror');state.streamAbsen=await openCamera(v,'user');$('cameraOffAbsen').style.display='none'}state.attendancePhase='FACE';setBusy(false);await verifyFaceAttendance(true)}catch(e){setBusy(false);if(['SCAN_SESSION_EXPIRED','INVALID_SCAN_SESSION'].includes(e.code)){showStatus('statusAbsen','warn','Sesi QR sudah berakhir. Scan QR kembali.');return resetAttendanceFlow({preserveType:true})}showStatus('statusAbsen','error',e.message);showRetryFaceActions()}}
-    async function verifyFaceAttendance(isRetry){if(state.busy||!state.qrSession||!state.streamAbsen)return;setBusy(true);hideResult();hideStatus('statusAbsen');hideRetryFaceActions();resetScanProgress('absen');try{const live=await livenessChallenge($('videoAbsen'),(m,p)=>{$('instructionTitle').textContent=m;$('instructionDetail').textContent=getLivenessDetail_(m);$('modeAbsen').textContent='Liveness';setScanProgress('absen',p)},state.challengeDirection);const frozen=captureFaceFrameForVerification($('videoAbsen'));state.successfulSnapshot=frozen.displayDataUrl;$('instructionTitle').textContent='Mengambil data wajah';$('instructionDetail').textContent='Memproses satu frame terbaik.';$('modeAbsen').textContent='Data wajah';setScanProgress('absen',84);const d=await captureDescriptorFromCanvas(frozen.analysisCanvas);setScanProgress('absen',92);state.attendancePhase='VERIFYING';$('instructionTitle').textContent='Memverifikasi wajah';$('instructionDetail').textContent='Mencocokkan profil biometrik…';const r=await callApi('VERIFY_ATTENDANCE',{scanSession:state.qrSession,descriptor:Array.from(d),liveness:{blink:true,direction:live.direction,returnedStraight:true}});state.attendancePhase='DONE';updateAttendanceSteps('DONE');setScanProgress('absen',100);await sleep(90);showScanSuccess('absen');$('resultNama').textContent=r.nama;$('resultMeta').textContent=`${r.jenis} • ${r.tanggal} ${r.jam}`;$('scanPhotoResult').src=state.successfulSnapshot;$('profilePhotoResult').hidden=true;$('profilePhotoResult').removeAttribute('src');$('profilePhotoPlaceholder').style.display='grid';$('profilePhotoPlaceholder').textContent=r.hasProfilePhoto?'Memuat foto profil…':'Foto profil belum tersedia';$('resultAbsen').classList.add('show');$('instructionTitle').textContent=r.duplicate?'Absensi sudah tercatat':'Absensi berhasil';$('instructionDetail').textContent=r.message;$('modeAbsen').textContent='✓ Selesai';showStatus('statusAbsen',r.duplicate?'warn':'ok',r.message);stopStream(state.streamAbsen);state.streamAbsen=null;$('videoAbsen').srcObject=null;$('cameraOffAbsen').style.display='none';if(r.photoToken)loadVerifiedProfilePhoto(r.photoToken);state.qrSession='';state.challengeDirection=''}catch(e){resetScanProgress('absen');if(['SCAN_SESSION_EXPIRED','INVALID_SCAN_SESSION'].includes(e.code)){setBusy(false);showStatus('statusAbsen','warn','Sesi QR sudah berakhir.');return resetAttendanceFlow({preserveType:true})}state.attendancePhase='FACE';$('instructionTitle').textContent=e.code==='FACE_UNCERTAIN'?'Wajah perlu dipindai ulang':'Verifikasi belum berhasil';$('instructionDetail').textContent=e.message;$('modeAbsen').textContent='Coba Lagi';showStatus('statusAbsen',e.code==='FACE_UNCERTAIN'?'warn':'error',e.message);showRetryFaceActions()}finally{setBusy(false);refreshButtons()}}
+    async function verifyFaceAttendance(isRetry){
+      if(state.busy||!state.qrSession||!state.streamAbsen)return;
+      setBusy(true);hideResult();hideStatus('statusAbsen');hideRetryFaceActions();resetScanProgress('absen');
+      try{
+        const live=await livenessChallenge($('videoAbsen'),(m,p)=>{$('instructionTitle').textContent=m;$('instructionDetail').textContent=getLivenessDetail_(m);$('modeAbsen').textContent='Liveness';setScanProgress('absen',p)},state.challengeDirection);
+        const frozen=captureFaceFrameForVerification($('videoAbsen'));
+        state.successfulSnapshot=frozen.displayDataUrl;
+        $('instructionTitle').textContent='Mengambil data wajah';$('instructionDetail').textContent='Memproses satu frame terbaik.';$('modeAbsen').textContent='Data wajah';setScanProgress('absen',84);
+        const d=await captureDescriptorFromCanvas(frozen.analysisCanvas);
+        setScanProgress('absen',92);state.attendancePhase='VERIFYING';
+        $('instructionTitle').textContent='Memverifikasi wajah';$('instructionDetail').textContent='Mencocokkan profil biometrik…';$('modeAbsen').textContent='Verifikasi';
+        const r=await callApi('VERIFY_ATTENDANCE',{scanSession:state.qrSession,descriptor:Array.from(d),liveness:{blink:true,direction:live.direction,returnedStraight:true}});
+        state.attendancePhase='DONE';updateAttendanceSteps('DONE');
+        setScanProgress('absen',100);await sleep(90);showScanSuccess('absen');
+
+        $('resultNama').textContent=r.nama;
+        $('resultMeta').textContent=`${r.jenis} • ${r.tanggal} ${r.jam}`;
+        $('scanPhotoResult').src=state.successfulSnapshot;
+        $('profilePhotoResult').hidden=true;$('profilePhotoResult').removeAttribute('src');
+        $('profilePhotoPlaceholder').style.display='grid';
+        $('profilePhotoPlaceholder').textContent=r.hasProfilePhoto?'Memuat foto profil…':'Foto profil belum tersedia';
+
+        // Mulai mengambil foto profil saat centang masih tampil agar transisi terasa cepat.
+        if(r.photoToken)loadVerifiedProfilePhoto(r.photoToken);
+
+        $('instructionTitle').textContent=r.duplicate?'Absensi sudah tercatat':'Absensi berhasil';
+        $('instructionDetail').textContent=r.message;
+        $('modeAbsen').textContent='✓ Selesai';
+        hideStatus('statusAbsen');
+
+        stopStream(state.streamAbsen);state.streamAbsen=null;$('videoAbsen').srcObject=null;$('cameraOffAbsen').style.display='none';
+
+        // Centang tampil sekitar 1 detik, kemudian area kamera yang sama berubah menjadi hasil foto.
+        await sleep(1000);
+        $('scanRingAbsen').classList.remove('show');
+        hideScanSuccess('absen');
+        $('cameraResult').classList.add('show');
+
+        state.qrSession='';state.challengeDirection='';
+      }catch(e){
+        resetScanProgress('absen');hideScanSuccess('absen');
+        if(['SCAN_SESSION_EXPIRED','INVALID_SCAN_SESSION'].includes(e.code)){setBusy(false);showStatus('statusAbsen','warn','Sesi QR sudah berakhir.');return resetAttendanceFlow({preserveType:true})}
+        state.attendancePhase='FACE';
+        $('instructionTitle').textContent=e.code==='FACE_UNCERTAIN'?'Wajah perlu dipindai ulang':'Verifikasi belum berhasil';
+        $('instructionDetail').textContent=e.message;$('modeAbsen').textContent='Coba Lagi';
+        showStatus('statusAbsen',e.code==='FACE_UNCERTAIN'?'warn':'error',e.message);showRetryFaceActions();
+      }finally{setBusy(false);refreshButtons()}
+    }
     async function loadVerifiedProfilePhoto(token){try{const r=await callApi('GET_VERIFIED_PHOTO',{photoToken:token},20000);if(r.dataUrl){$('profilePhotoResult').src=r.dataUrl;$('profilePhotoResult').hidden=false;$('profilePhotoPlaceholder').style.display='none'}}catch(e){$('profilePhotoPlaceholder').textContent='Foto profil gagal dimuat'}}
     function showRetryFaceActions(){if(state.qrSession)$('retryFaceActions').classList.add('show')}function hideRetryFaceActions(){$('retryFaceActions').classList.remove('show')}
     function resetAttendanceFlow(o={}){const pb=o.preserveBusy===true,pt=o.preserveType!==false,ob=state.busy,ot=state.attendanceType;state.qrScanActive=false;resetCameraOnlyAbsen();Object.assign(state,{attendancePhase:'IDLE',qrSession:'',qrName:'',challengeDirection:'',successfulSnapshot:''});$('qrResult').classList.remove('show');$('qrNama').textContent='';$('qrGuide').classList.remove('show');$('scanRingAbsen').classList.remove('show');$('instructionTitle').textContent='Siap melakukan absensi';$('instructionDetail').textContent='Pilih MASUK atau PULANG, lalu tekan Scan QR ID.';$('modeAbsen').textContent='Siap';$('cameraOffAbsen').style.display='grid';hideStatus('statusAbsen');hideRetryFaceActions();hideResult();resetScanProgress('absen');updateAttendanceSteps('QR');if(pt){state.attendanceType=ot;$('attendanceSegment').dataset.value=ot;$('segmentMasuk').classList.toggle('active',ot==='MASUK');$('segmentPulang').classList.toggle('active',ot==='PULANG')}if(pb)state.busy=ob;refreshButtons()}
-    function resetCameraOnlyAbsen(){state.qrScanActive=false;stopStream(state.streamAbsen);state.streamAbsen=null;$('videoAbsen').srcObject=null;$('cameraOffAbsen').style.display='grid';$('qrGuide').classList.remove('show')}
+    function resetCameraOnlyAbsen(){state.qrScanActive=false;stopStream(state.streamAbsen);state.streamAbsen=null;$('videoAbsen').srcObject=null;$('cameraOffAbsen').style.display='grid';$('qrGuide').classList.remove('show');$('cameraResult').classList.remove('show')}
     function updateAttendanceSteps(s){$('stepQr').className='step';$('stepFace').className='step';if(s==='QR')$('stepQr').classList.add('active');else if(s==='FACE'){$('stepQr').classList.add('done');$('stepFace').classList.add('active')}else{$('stepQr').classList.add('done');$('stepFace').classList.add('done')}}
-    async function cekGuruUntukRegistrasi(){if(state.busy)return;const id=normalizeId($('daftarId').value),kode=String($('kodeRegistrasi').value||'').trim();if(!id||!kode)return showStatus('statusDaftar','warn','Isi ID guru dan kode registrasi.');setBusy(true);showStatus('statusDaftar','info','Memeriksa data guru…');try{const r=await callApi('ENROLL_VALIDATE',{id,kode});state.daftarValidated=true;state.daftarNama=r.nama;$('daftarId').value=id;$('modeDaftar').textContent='Identitas valid';$('instructionDaftarTitle').textContent=r.nama;$('instructionDaftarDetail').textContent='Aktifkan kamera untuk merekam 5 sampel wajah.';showStatus('statusDaftar','ok',`Data ditemukan: ${r.nama}\nSilakan aktifkan kamera.`)}catch(e){state.daftarValidated=false;state.daftarNama='';showStatus('statusDaftar','error',e.message)}finally{setBusy(false);refreshButtons()}}
-    async function startCameraDaftar(){if(!state.daftarValidated)return showStatus('statusDaftar','warn','Cek ID dan kode registrasi terlebih dahulu.');if(!state.modelsReady)return showStatus('statusDaftar','warn','Model wajah masih dimuat.');try{stopCameraDaftar();resetScanProgress('daftar');state.streamDaftar=await openCamera($('videoDaftar'),'user');$('cameraOffDaftar').style.display='none';$('modeDaftar').textContent='Kamera aktif';$('instructionDaftarTitle').textContent='Posisikan wajah di lingkaran';$('instructionDaftarDetail').textContent='Setelah siap, tekan Rekam 5 Sampel Wajah.'}catch(e){showStatus('statusDaftar','error',humanCameraError(e))}refreshButtons()}
-    function stopCameraDaftar(p=false){stopStream(state.streamDaftar);state.streamDaftar=null;$('videoDaftar').srcObject=null;$('cameraOffDaftar').style.display='grid';$('modeDaftar').textContent=state.daftarValidated?'Identitas valid':'Belum diverifikasi';if(!p)resetScanProgress('daftar');refreshButtons()}
-    function resetValidasiDaftar(){state.daftarValidated=false;state.daftarNama='';stopCameraDaftar();$('instructionDaftarTitle').textContent='Verifikasi data guru terlebih dahulu';$('instructionDaftarDetail').textContent='Setelah identitas valid, aktifkan kamera dan ikuti petunjuk.';hideStatus('statusDaftar')}
-    async function rekamWajah(){if(state.busy)return;const id=normalizeId($('daftarId').value),kode=String($('kodeRegistrasi').value||'').trim();if(!state.daftarValidated||!id||!kode)return showStatus('statusDaftar','warn','Validasi ID dan kode registrasi terlebih dahulu.');if(!state.streamDaftar)return showStatus('statusDaftar','warn','Aktifkan kamera terlebih dahulu.');setBusy(true);try{resetScanProgress('daftar');const dir=Math.random()<.5?'LEFT':'RIGHT';await livenessChallenge($('videoDaftar'),(m,p)=>{$('instructionDaftarTitle').textContent=m;$('instructionDaftarDetail').textContent=getLivenessDetail_(m);$('modeDaftar').textContent='Liveness';setScanProgress('daftar',p)},dir);$('instructionDaftarTitle').textContent='Mengambil 5 sampel wajah';$('modeDaftar').textContent='Merekam';const samples=[];for(let i=0;i<5;i++){const d=await captureDescriptorFromVideo($('videoDaftar'));samples.push(Array.from(d));setScanProgress('daftar',82+(i+1)*3);$('instructionDaftarTitle').textContent=`Sampel ${i+1} dari 5`;await sleep(160)}if(averagePairwiseDistance(samples)>.45)throw new Error('Lima sampel terlalu berbeda. Ulangi dengan wajah lebih stabil.');setScanProgress('daftar',98);const r=await callApi('ENROLL_SAVE',{id,kode,descriptors:samples});setScanProgress('daftar',100);await sleep(90);showScanSuccess('daftar');$('instructionDaftarTitle').textContent='Pendaftaran wajah berhasil';$('instructionDaftarDetail').textContent=r.nama;$('modeDaftar').textContent='✓ Selesai';showStatus('statusDaftar','ok',`Pendaftaran wajah berhasil untuk ${r.nama}.`);$('kodeRegistrasi').value='';stopCameraDaftar(true);state.daftarValidated=false;state.daftarNama=''}catch(e){resetScanProgress('daftar');$('instructionDaftarTitle').textContent='Perekaman belum berhasil';$('instructionDaftarDetail').textContent=e.message;$('modeDaftar').textContent='Coba lagi';showStatus('statusDaftar','error',e.message)}finally{setBusy(false);refreshButtons()}}
 
     async function livenessChallenge(video,onProgress,requiredDirection){if(!state.faceLandmarker)throw new Error('MediaPipe belum siap.');if(!['LEFT','RIGHT'].includes(requiredDirection))throw new Error('Arah challenge tidak valid.');const calEnd=Date.now()+3300,bs=[],hs=[];let stable=0;onProgress?.('Tatap kamera',2);while(Date.now()<calEnd&&stable<7){const r=getMediaPipeResult_(video),count=r.faceLandmarks?.length||0;if(count>1)throw new Error('Terdeteksi lebih dari satu wajah.');if(count===1){const bl=getBlendshapeScore_(r,'eyeBlinkLeft'),br=getBlendshapeScore_(r,'eyeBlinkRight'),avg=(bl+br)/2,ho=getDisplayedHeadOffset_(r,video);if(Number.isFinite(avg)&&Number.isFinite(ho)){bs.push(avg);hs.push(ho);stable++;onProgress?.(`Stabilkan wajah ${stable}/7`,3+Math.round(stable/7*12))}}else onProgress?.('Posisikan wajah di dalam lingkaran',2);await sleep(24)}if(stable<5)throw new Error('Wajah belum terbaca stabil. Hadapkan wajah lurus ke kamera.');const low=[...bs].sort((a,b)=>a-b).slice(0,4),base=low.reduce((s,v)=>s+v,0)/low.length,closed=clamp_(base+.35,.42,.69),open=clamp_(base+.16,.18,.36),headBase=median_(hs);let closedSeen=false,reopened=false;const blinkEnd=Date.now()+7000;onProgress?.('Kedipkan kedua mata',18);while(Date.now()<blinkEnd){const r=getMediaPipeResult_(video),count=r.faceLandmarks?.length||0;if(count>1)throw new Error('Terdeteksi lebih dari satu wajah.');if(count===1){const l=getBlendshapeScore_(r,'eyeBlinkLeft'),rr=getBlendshapeScore_(r,'eyeBlinkRight'),avg=(l+rr)/2,both=Math.min(l,rr);if(!closedSeen){if(avg>=closed&&both>=Math.max(.24,closed-.18)){closedSeen=true;onProgress?.('Kedipan terbaca — buka mata',35)}else onProgress?.('Kedipkan kedua mata',23)}else if(avg<=open){reopened=true;onProgress?.('Kedipan berhasil',42);break}}await sleep(22)}if(!closedSeen||!reopened)throw new Error('Kedipan belum terdeteksi. Kedipkan kedua mata dengan jelas.');const sign=requiredDirection==='LEFT'?-1:1,label=requiredDirection==='LEFT'?'KIRI ←':'KANAN →',headEnd=Date.now()+9000;let sideFrames=0,side=false,returnFrames=0;onProgress?.(`Gerakkan kepala ke ${label}`,48);while(Date.now()<headEnd){const r=getMediaPipeResult_(video),count=r.faceLandmarks?.length||0;if(count>1)throw new Error('Terdeteksi lebih dari satu wajah.');if(count===1){const off=getDisplayedHeadOffset_(r,video),delta=off-headBase,directed=delta*sign,abs=Math.abs(delta);if(!side){if(directed>=.048&&abs>=.048){sideFrames++;onProgress?.(`Gerakan ${label} terbaca`,57+Math.min(sideFrames*3,8));if(sideFrames>=2){side=true;onProgress?.('Kembali hadap lurus',69)}}else{sideFrames=0;onProgress?.(`Gerakkan kepala ke ${label}`,50)}}else{if(abs<=.026){returnFrames++;onProgress?.('Kembali lurus',72+Math.min(returnFrames*3,6));if(returnFrames>=2){onProgress?.('Liveness berhasil',80);return{direction:requiredDirection}}}else{returnFrames=0;onProgress?.('Kembali hadap lurus',70)}}}await sleep(24)}if(!side)throw new Error(`Gerakan kepala ke ${requiredDirection==='LEFT'?'kiri':'kanan'} belum terdeteksi.`);throw new Error('Kepala belum terbaca kembali lurus.')}
     function getMediaPipeResult_(v){let t=performance.now();if(t<=state.lastMediaPipeTimestamp)t=state.lastMediaPipeTimestamp+.01;state.lastMediaPipeTimestamp=t;return state.faceLandmarker.detectForVideo(v,t)}
@@ -358,27 +416,54 @@
     async function captureDescriptorFromCanvas(c){const o=new faceapi.TinyFaceDetectorOptions({inputSize:160,scoreThreshold:.48}),d=await faceapi.detectSingleFace(c,o).withFaceLandmarks().withFaceDescriptor();if(!d)throw new Error('Data wajah akhir belum terbaca. Gunakan Coba Lagi.');return d.descriptor}
     function captureFaceFrameForVerification(v){const dc=document.createElement('canvas');dc.width=PHOTO_WIDTH;dc.height=PHOTO_HEIGHT;const d=dc.getContext('2d'),vw=v.videoWidth||640,vh=v.videoHeight||480,ta=PHOTO_WIDTH/PHOTO_HEIGHT,sa=vw/vh;let sw,sh,sx,sy;if(sa>ta){sh=vh;sw=vh*ta;sx=(vw-sw)/2;sy=0}else{sw=vw;sh=vw/ta;sx=0;sy=(vh-sh)/2}d.save();d.translate(PHOTO_WIDTH,0);d.scale(-1,1);d.drawImage(v,sx,sy,sw,sh,0,0,PHOTO_WIDTH,PHOTO_HEIGHT);d.restore();const ac=document.createElement('canvas');ac.width=300;ac.height=300;const a=ac.getContext('2d'),sq=Math.min(vw,vh);a.drawImage(v,(vw-sq)/2,(vh-sq)/2,sq,sq,0,0,300,300);return{displayDataUrl:dc.toDataURL('image/jpeg',.8),analysisCanvas:ac}}
     function descriptorDistance(a,b){let s=0;for(let i=0;i<a.length;i++){const d=Number(a[i])-Number(b[i]);s+=d*d}return Math.sqrt(s)}function averagePairwiseDistance(a){if(!a||a.length<2)return 0;let t=0,c=0;for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++){t+=descriptorDistance(a[i],a[j]);c++}return c?t/c:0}
-    function initProgressRings(){['Absen','Daftar','Admin'].forEach(s=>{const c=$(`progress${s}`);if(!c)return;const r=Number(c.getAttribute('r')),circ=2*Math.PI*r;c.dataset.circumference=String(circ);c.style.strokeDasharray=`${circ} ${circ}`;c.style.strokeDashoffset=String(circ);c.style.opacity='0'})}
+    function initProgressRings(){['Absen','Admin'].forEach(s=>{const c=$(`progress${s}`);if(!c)return;const r=Number(c.getAttribute('r')),circ=2*Math.PI*r;c.dataset.circumference=String(circ);c.style.strokeDasharray=`${circ} ${circ}`;c.style.strokeDashoffset=String(circ);c.style.opacity='0'})}
     function setScanProgress(type,value){const s=type==='daftar'?'Daftar':type==='admin'?'Admin':'Absen',c=$(`progress${s}`);if(!c)return;const p=clamp_(Number(value)||0,0,100),circ=Number(c.dataset.circumference)||(2*Math.PI*88);hideScanSuccess(type);if(p<=0){c.style.transition='none';c.style.opacity='0';c.style.strokeDasharray=`${circ} ${circ}`;c.style.strokeDashoffset=String(circ);void c.getBoundingClientRect();c.style.transition='stroke-dashoffset .16s linear,opacity .08s linear';return}c.style.opacity='1';if(p>=100){c.style.strokeDasharray='none';c.style.strokeDashoffset='0';return}c.style.strokeDasharray=`${circ} ${circ}`;c.style.strokeDashoffset=String(circ*(1-p/100))}
     function resetScanProgress(t){setScanProgress(t,0);hideScanSuccess(t)}function showScanSuccess(t){const s=t==='daftar'?'Daftar':t==='admin'?'Admin':'Absen',e=$(`success${s}`);if(e)e.classList.add('show')}function hideScanSuccess(t){const s=t==='daftar'?'Daftar':t==='admin'?'Admin':'Absen',e=$(`success${s}`);if(e)e.classList.remove('show')}
-    function openAdmin(){state.adminSession?validateExistingAdminSession():openAdminLogin()}function openAdminLogin(){$('adminLoginOverlay').classList.add('show');document.body.classList.add('modal-open');setTimeout(()=>$('adminPassword').focus(),80)}function closeAdminLogin(){$('adminLoginOverlay').classList.remove('show');hideStatus('adminLoginStatus');if(!$('adminDashboardOverlay').classList.contains('show'))document.body.classList.remove('modal-open')}
+    function showAttendancePage_(){
+      $('adminLoginPage').classList.remove('show');
+      $('adminDashboardOverlay').classList.remove('show');
+      $('mainApp').style.display='block';
+      document.body.classList.remove('modal-open');
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    function openAdmin(){state.adminSession?validateExistingAdminSession():openAdminLogin()}
+    function openAdminLogin(){
+      resetAttendanceFlow({preserveType:true});
+      $('mainApp').style.display='none';
+      $('adminDashboardOverlay').classList.remove('show');
+      $('adminLoginPage').classList.add('show');
+      hideStatus('adminLoginStatus');
+      window.scrollTo({top:0,behavior:'auto'});
+      setTimeout(()=>$('adminPassword').focus(),80);
+    }
+    function backToAttendance(){stopAdminEnrollCamera();showAttendancePage_()}
     async function validateExistingAdminSession(){try{const r=await adminApi('ADMIN_SESSION_INFO');state.adminUser=r.username;state.adminName=r.namaAdmin;openAdminDashboard()}catch(e){openAdminLogin()}}
-    async function adminLogin(){const u=String($('adminUsername').value||'').trim(),p=String($('adminPassword').value||'');if(!u||!p)return showStatus('adminLoginStatus','warn','Username dan password wajib diisi.');setAdminBusy(true);showStatus('adminLoginStatus','info','Memeriksa akun admin…');try{const r=await callApi('ADMIN_LOGIN',{username:u,password:p});state.adminSession=r.adminSession;state.adminUser=r.username;state.adminName=r.namaAdmin;sessionStorage.setItem('absenAdminSessionV5',state.adminSession);$('adminPassword').value='';closeAdminLogin();openAdminDashboard()}catch(e){showStatus('adminLoginStatus','error',e.message)}finally{setAdminBusy(false)}}
-    function openAdminDashboard(){$('adminDashboardOverlay').classList.add('show');document.body.classList.add('modal-open');$('adminIdentity').textContent=`${state.adminName||'Administrator'} • ${state.adminUser}`;openAdminPage('dashboard');loadAdminDashboard()}
-    function closeAdminDashboard(){stopAdminEnrollCamera();$('adminDashboardOverlay').classList.remove('show');if(!$('adminLoginOverlay').classList.contains('show'))document.body.classList.remove('modal-open')}
-    async function adminLogout(){try{if(state.adminSession)await adminApi('ADMIN_LOGOUT')}catch(e){}state.adminSession='';state.adminUser='';state.adminName='';sessionStorage.removeItem('absenAdminSessionV5');closeAdminDashboard()}
+    async function adminLogin(){const u=String($('adminUsername').value||'').trim(),p=String($('adminPassword').value||'');if(!u||!p)return showStatus('adminLoginStatus','warn','Username dan password wajib diisi.');setAdminBusy(true);showStatus('adminLoginStatus','info','Memeriksa akun admin…');try{const r=await callApi('ADMIN_LOGIN',{username:u,password:p});state.adminSession=r.adminSession;state.adminUser=r.username;state.adminName=r.namaAdmin;sessionStorage.setItem('absenAdminSessionV6',state.adminSession);$('adminPassword').value='';openAdminDashboard()}catch(e){showStatus('adminLoginStatus','error',e.message)}finally{setAdminBusy(false)}}
+    function openAdminDashboard(){
+      $('mainApp').style.display='none';
+      $('adminLoginPage').classList.remove('show');
+      $('adminDashboardOverlay').classList.add('show');
+      $('adminIdentity').textContent=`${state.adminName||'Administrator'} • ${state.adminUser}`;
+      window.scrollTo({top:0,behavior:'auto'});
+      openAdminPage('dashboard');loadAdminDashboard();
+    }
+    function closeAdminDashboard(){backToAttendance()}
+    async function adminLogout(){try{if(state.adminSession)await adminApi('ADMIN_LOGOUT')}catch(e){}state.adminSession='';state.adminUser='';state.adminName='';sessionStorage.removeItem('absenAdminSessionV6');showAttendancePage_()}
     function openAdminPage(p){document.querySelectorAll('.admin-nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.adminPage===p));document.querySelectorAll('.admin-page').forEach(s=>s.classList.toggle('active',s.id===`adminPage-${p}`));if(p!=='rekam')stopAdminEnrollCamera();if(p==='guru')loadAdminGuruList();else if(p==='rekam')ensureAdminGuruList().then(fillAdminEnrollSelect);else if(p==='absensi')loadAdminAttendance();else if(p==='print')loadAdminQrPrintList()}
     async function loadAdminDashboard(){try{setAdminBusy(true);const r=await adminApi('ADMIN_DASHBOARD_SUMMARY');$('statGuruAktif').textContent=r.guruAktif;$('statWajah').textContent=r.wajahTerdaftar;$('statFoto').textContent=r.fotoProfil;$('statAbsenHariIni').textContent=r.absensiHariIni}catch(e){alert('Gagal memuat dashboard: '+e.message)}finally{setAdminBusy(false)}}
     async function ensureAdminGuruList(){if(state.adminGuruList.length)return state.adminGuruList;const r=await adminApi('ADMIN_LIST_GURU');state.adminGuruList=r.guru||[];return state.adminGuruList}
     async function loadAdminGuruList(){try{setAdminBusy(true);const r=await adminApi('ADMIN_LIST_GURU');state.adminGuruList=r.guru||[];renderAdminGuruTable();fillAdminEnrollSelect()}catch(e){alert('Gagal memuat data guru: '+e.message)}finally{setAdminBusy(false)}}
     function renderAdminGuruTable(){const b=$('guruTableBody');if(!state.adminGuruList.length){b.innerHTML='<tr><td colspan="7">Belum ada data guru.</td></tr>';return}b.innerHTML=state.adminGuruList.map(g=>`<tr><td>${escapeHtml(g.id)}</td><td>${escapeHtml(g.nama)}</td><td><span class="badge ${g.aktif?'ok':'muted'}">${g.aktif?'AKTIF':'NONAKTIF'}</span></td><td><span class="badge ${g.hasFace?'ok':'warn'}">${g.hasFace?'TERDAFTAR':'BELUM'}</span></td><td><span class="badge ${g.hasPhoto?'ok':'warn'}">${g.hasPhoto?'ADA':'BELUM'}</span></td><td><span class="badge ${g.hasQr?'ok':'warn'}">${g.hasQr?'ADA':'BELUM'}</span></td><td><div class="mini-actions"><button class="mini-btn" data-action="edit" data-id="${escapeAttr(g.id)}">Edit</button><button class="mini-btn" data-action="photo" data-id="${escapeAttr(g.id)}">Foto</button><button class="mini-btn" data-action="enroll" data-id="${escapeAttr(g.id)}">Rekam</button><button class="mini-btn danger" data-action="resetface" data-id="${escapeAttr(g.id)}">Reset Wajah</button></div></td></tr>`).join('')}
-    function handleGuruTableAction(e){const b=e.target.closest('button[data-action]');if(!b)return;const g=state.adminGuruList.find(x=>x.id===b.dataset.id);if(!g)return;if(b.dataset.action==='edit')fillAdminGuruForm(g);else if(b.dataset.action==='photo'){state.adminSelectedPhotoGuruId=g.id;$('adminPhotoFile').value='';$('adminPhotoFile').click()}else if(b.dataset.action==='enroll'){openAdminPage('rekam');$('adminEnrollGuruSelect').value=g.id;updateAdminEnrollSelection()}else if(b.dataset.action==='resetface')adminResetFace(g)}
-    function fillAdminGuruForm(g){$('adminGuruId').value=g.id;$('adminGuruNama').value=g.nama;$('adminGuruStatus').value=g.aktif?'YA':'TIDAK';$('adminGuruOriginalId').value=g.id;$('adminGuruId').readOnly=true}function clearAdminGuruForm(){$('adminGuruId').value='';$('adminGuruNama').value='';$('adminGuruStatus').value='YA';$('adminGuruOriginalId').value='';$('adminGuruId').readOnly=false}
-    async function adminSaveGuru(){const id=normalizeId($('adminGuruId').value),nama=String($('adminGuruNama').value||'').trim(),status=$('adminGuruStatus').value,originalId=normalizeId($('adminGuruOriginalId').value);if(!id||!nama)return alert('ID Guru dan Nama wajib diisi.');try{setAdminBusy(true);await adminApi('ADMIN_SAVE_GURU',{id,nama,status,originalId});clearAdminGuruForm();state.adminGuruList=[];await loadAdminGuruList();await loadAdminDashboard()}catch(e){alert('Gagal menyimpan guru: '+e.message)}finally{setAdminBusy(false)}}
+    function handleGuruTableAction(e){const b=e.target.closest('button[data-action]');if(!b)return;const g=state.adminGuruList.find(x=>x.id===b.dataset.id);if(!g)return;if(b.dataset.action==='edit')openEditGuruModal(g);else if(b.dataset.action==='photo'){state.adminSelectedPhotoGuruId=g.id;$('adminPhotoFile').value='';$('adminPhotoFile').click()}else if(b.dataset.action==='enroll'){openAdminPage('rekam');$('adminEnrollGuruSelect').value=g.id;updateAdminEnrollSelection()}else if(b.dataset.action==='resetface')adminResetFace(g)}
+    function clearAdminGuruForm(){$('adminGuruId').value='';$('adminGuruNama').value='';$('adminGuruStatus').value='YA'}
+    async function adminSaveGuru(){const id=normalizeId($('adminGuruId').value),nama=String($('adminGuruNama').value||'').trim(),status=$('adminGuruStatus').value;if(!id||!nama)return alert('ID Guru dan Nama wajib diisi.');try{setAdminBusy(true);await adminApi('ADMIN_SAVE_GURU',{id,nama,status,originalId:''});clearAdminGuruForm();state.adminGuruList=[];await loadAdminGuruList();await loadAdminDashboard()}catch(e){alert('Gagal menambah guru: '+e.message)}finally{setAdminBusy(false)}}
+    function openEditGuruModal(g){$('editGuruId').value=g.id;$('editGuruNama').value=g.nama;$('editGuruStatus').value=g.aktif?'YA':'TIDAK';hideStatus('editGuruStatusMessage');$('editGuruOverlay').classList.add('show');document.body.classList.add('modal-open');setTimeout(()=>$('editGuruNama').focus(),60)}
+    function closeEditGuruModal(){$('editGuruOverlay').classList.remove('show');hideStatus('editGuruStatusMessage');if(!$('cropOverlay').classList.contains('show'))document.body.classList.remove('modal-open')}
+    async function saveEditGuru(){const id=normalizeId($('editGuruId').value),nama=String($('editGuruNama').value||'').trim(),status=$('editGuruStatus').value;if(!id||!nama)return showStatus('editGuruStatusMessage','warn','Nama guru wajib diisi.');try{setAdminBusy(true);showStatus('editGuruStatusMessage','info','Menyimpan perubahan…');const r=await adminApi('ADMIN_SAVE_GURU',{id,nama,status,originalId:id});showStatus('editGuruStatusMessage','ok',r.message);state.adminGuruList=[];await loadAdminGuruList();await loadAdminDashboard();await sleep(300);closeEditGuruModal()}catch(e){showStatus('editGuruStatusMessage','error',e.message)}finally{setAdminBusy(false)}}
     async function adminResetFace(g){if(!confirm(`Reset seluruh data wajah ${g.nama}?`))return;try{setAdminBusy(true);await adminApi('ADMIN_RESET_FACE',{id:g.id});state.adminGuruList=[];await loadAdminGuruList()}catch(e){alert('Gagal reset wajah: '+e.message)}finally{setAdminBusy(false)}}
 
     function handleAdminPhotoFile(e){const f=e.target.files?.[0];if(!f||!state.adminSelectedPhotoGuruId)return;if(!/^image\/(jpeg|png|webp)$/i.test(f.type))return alert('Gunakan JPG, PNG, atau WEBP.');if(f.size>12*1024*1024)return alert('File terlalu besar. Maksimum 12 MB.');const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{state.crop.image=im;state.crop.guruId=state.adminSelectedPhotoGuruId;resetCrop();openCropModal()};im.onerror=()=>alert('Foto gagal dibaca.');im.src=r.result};r.readAsDataURL(f)}
-    function openCropModal(){$('cropOverlay').classList.add('show');document.body.classList.add('modal-open');hideStatus('cropStatus');renderCrop()}function closeCropModal(){$('cropOverlay').classList.remove('show');state.crop.image=null;state.crop.guruId='';state.crop.dragging=false;state.crop.pointerId=null;if(!$('adminDashboardOverlay').classList.contains('show'))document.body.classList.remove('modal-open')}
+    function openCropModal(){$('cropOverlay').classList.add('show');document.body.classList.add('modal-open');hideStatus('cropStatus');renderCrop()}function closeCropModal(){$('cropOverlay').classList.remove('show');state.crop.image=null;state.crop.guruId='';state.crop.dragging=false;state.crop.pointerId=null;if(!$('editGuruOverlay').classList.contains('show'))document.body.classList.remove('modal-open')}
     function resetCrop(){const im=state.crop.image;if(!im)return;state.crop.zoom=1;state.crop.panX=state.crop.panY=0;state.crop.baseScale=Math.max(PHOTO_WIDTH/im.width,PHOTO_HEIGHT/im.height);$('cropZoom').value='1';$('cropZoomLabel').textContent='100%';renderCrop()}
     function updateCropZoom(){state.crop.zoom=Number($('cropZoom').value)||1;$('cropZoomLabel').textContent=Math.round(state.crop.zoom*100)+'%';clampCropPan();renderCrop()}
     function cropPointerDown(e){if(!state.crop.image)return;state.crop.dragging=true;state.crop.pointerId=e.pointerId;state.crop.startX=e.clientX;state.crop.startY=e.clientY;state.crop.startPanX=state.crop.panX;state.crop.startPanY=state.crop.panY;$('cropCanvas').setPointerCapture(e.pointerId);$('cropCanvas').classList.add('dragging')}
@@ -400,12 +485,12 @@
     async function loadAdminQrPrintList(){try{setAdminBusy(true);const g=await ensureAdminGuruList(),b=$('qrPrintTableBody');if(!g.length){b.innerHTML='<tr><td colspan="4">Belum ada data guru.</td></tr>';return}b.innerHTML=g.map(x=>`<tr><td><input class="qr-print-check" type="checkbox" value="${escapeAttr(x.id)}" ${x.hasQr?'':'disabled'} /></td><td>${escapeHtml(x.id)}</td><td>${escapeHtml(x.nama)}</td><td><span class="badge ${x.hasQr?'ok':'warn'}">${x.hasQr?'SIAP':'BELUM ADA'}</span></td></tr>`).join('')}catch(e){alert('Gagal memuat daftar QR: '+e.message)}finally{setAdminBusy(false)}}
     function setAllQrSelection(v){document.querySelectorAll('.qr-print-check:not(:disabled)').forEach(x=>x.checked=v)}
     async function generateQrPdf(){const ids=Array.from(document.querySelectorAll('.qr-print-check:checked')).map(x=>x.value);if(!ids.length)return alert('Pilih minimal satu guru.');if(!window.jspdf)return alert('Library PDF belum siap. Muat ulang halaman lalu coba lagi.');if(!window.QRCode)return alert('Library pembuat QR belum siap. Muat ulang halaman lalu coba lagi.');try{setAdminBusy(true);const r=await adminApi('ADMIN_GET_QR_PRINT_DATA',{ids});if(!(r.items||[]).length)throw new Error('Tidak ada data QR.');await createQrPdfA4(r.items)}catch(e){alert('Gagal membuat PDF QR: '+e.message)}finally{setAdminBusy(false)}}
-    async function qrTokenToDataUrl(token){if(!window.QRCode)throw new Error('Library pembuat QR belum siap.');const holder=document.createElement('div');holder.style.position='fixed';holder.style.left='-9999px';holder.style.top='-9999px';holder.style.width='420px';holder.style.height='420px';document.body.appendChild(holder);try{new QRCode(holder,{text:String(token||''),width:420,height:420,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});await sleep(30);const canvas=holder.querySelector('canvas');if(canvas)return canvas.toDataURL('image/png');const img=holder.querySelector('img');if(img&&img.src)return img.src;throw new Error('Gambar QR gagal dibuat.')}finally{holder.remove()}}async function createQrPdfA4(items){const{jsPDF}=window.jspdf,doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true}),pageW=210,pageH=297,marginX=12,marginY=12,gapX=6,gapY=6,cardW=(pageW-24-gapX)/2,cardH=(pageH-24-gapY*3)/4,qrSize=39;for(let i=0;i<items.length;i++){if(i>0&&i%8===0)doc.addPage('a4','portrait');const ix=i%8,row=Math.floor(ix/2),col=ix%2,x=marginX+col*(cardW+gapX),y=marginY+row*(cardH+gapY);doc.setDrawColor(33,85,205);doc.setLineWidth(.7);doc.roundedRect(x,y,cardW,cardH,4,4,'S');const q=await qrTokenToDataUrl(items[i].token),qx=x+(cardW-qrSize)/2,qy=y+7;doc.addImage(q,'PNG',qx,qy,qrSize,qrSize,undefined,'FAST');doc.setTextColor(23,34,53);doc.setFont('helvetica','bold');const n=String(items[i].nama||'');let fs=11;if(n.length>28)fs=9.5;if(n.length>40)fs=8.5;doc.setFontSize(fs);const lines=doc.splitTextToSize(n,cardW-12),ty=Math.min(y+cardH-9,qy+qrSize+7);doc.text(lines.slice(0,2),x+cardW/2,ty,{align:'center',baseline:'middle'})}doc.save('QR_ID_Guru_Absensi_V5.pdf')}
+    async function qrTokenToDataUrl(token){if(!window.QRCode)throw new Error('Library pembuat QR belum siap.');const holder=document.createElement('div');holder.style.position='fixed';holder.style.left='-9999px';holder.style.top='-9999px';holder.style.width='420px';holder.style.height='420px';document.body.appendChild(holder);try{new QRCode(holder,{text:String(token||''),width:420,height:420,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});await sleep(30);const canvas=holder.querySelector('canvas');if(canvas)return canvas.toDataURL('image/png');const img=holder.querySelector('img');if(img&&img.src)return img.src;throw new Error('Gambar QR gagal dibuat.')}finally{holder.remove()}}async function createQrPdfA4(items){const{jsPDF}=window.jspdf,doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true}),pageW=210,pageH=297,marginX=12,marginY=12,gapX=6,gapY=6,cardW=(pageW-24-gapX)/2,cardH=(pageH-24-gapY*3)/4,qrSize=39;for(let i=0;i<items.length;i++){if(i>0&&i%8===0)doc.addPage('a4','portrait');const ix=i%8,row=Math.floor(ix/2),col=ix%2,x=marginX+col*(cardW+gapX),y=marginY+row*(cardH+gapY);doc.setDrawColor(33,85,205);doc.setLineWidth(.7);doc.roundedRect(x,y,cardW,cardH,4,4,'S');const q=await qrTokenToDataUrl(items[i].token),qx=x+(cardW-qrSize)/2,qy=y+7;doc.addImage(q,'PNG',qx,qy,qrSize,qrSize,undefined,'FAST');doc.setTextColor(23,34,53);doc.setFont('helvetica','bold');const n=String(items[i].nama||'');let fs=11;if(n.length>28)fs=9.5;if(n.length>40)fs=8.5;doc.setFontSize(fs);const lines=doc.splitTextToSize(n,cardW-12),ty=Math.min(y+cardH-9,qy+qrSize+7);doc.text(lines.slice(0,2),x+cardW/2,ty,{align:'center',baseline:'middle'})}doc.save('QR_ID_Guru_Absensi_V6.pdf')}
     async function adminChangePassword(){const o=$('adminOldPassword').value,n=$('adminNewPassword').value,n2=$('adminNewPassword2').value;if(!o||!n||!n2)return showStatus('adminAccountStatus','warn','Semua kolom password wajib diisi.');if(n!==n2)return showStatus('adminAccountStatus','warn','Konfirmasi password baru tidak sama.');if(n.length<10)return showStatus('adminAccountStatus','warn','Password baru minimal 10 karakter.');try{setAdminBusy(true);const r=await adminApi('ADMIN_CHANGE_PASSWORD',{oldPassword:o,newPassword:n});$('adminOldPassword').value=$('adminNewPassword').value=$('adminNewPassword2').value='';showStatus('adminAccountStatus','ok',r.message)}catch(e){showStatus('adminAccountStatus','error',e.message)}finally{setAdminBusy(false)}}
     function setBusy(v){state.busy=v;refreshButtons()}function setAdminBusy(v){state.adminBusy=v;refreshAdminEnrollButtons()}
-    function refreshButtons(){const lock=state.busy||state.attendancePhase!=='IDLE';$('segmentMasuk').disabled=lock;$('segmentPulang').disabled=lock;$('btnScanQr').disabled=state.busy||!state.modelsReady||state.attendancePhase!=='IDLE';$('btnBatalAbsen').disabled=state.attendancePhase==='IDLE'&&!state.streamAbsen;$('btnCekGuru').disabled=state.busy;$('btnCameraDaftar').disabled=state.busy||!state.modelsReady||!state.daftarValidated||!!state.streamDaftar;$('btnStopDaftar').disabled=state.busy||!state.streamDaftar;$('btnRekamWajah').disabled=state.busy||!state.modelsReady||!state.daftarValidated||!state.streamDaftar}
+    function refreshButtons(){const lock=state.busy||state.attendancePhase!=='IDLE';$('segmentMasuk').disabled=lock;$('segmentPulang').disabled=lock;$('btnScanQr').disabled=state.busy||!state.modelsReady||state.attendancePhase!=='IDLE';$('btnBatalAbsen').disabled=state.attendancePhase==='IDLE'&&!state.streamAbsen}
     function showStatus(id,type,msg){const e=$(id);e.className=`status show ${type}`;e.textContent=msg}function hideStatus(id){const e=$(id);e.className='status';e.textContent=''}
-    function hideResult(){$('resultAbsen').classList.remove('show');$('profilePhotoResult').hidden=true;$('profilePhotoResult').removeAttribute('src');$('scanPhotoResult').removeAttribute('src');$('resultNama').textContent='';$('resultMeta').textContent=''}
+    function hideResult(){$('cameraResult').classList.remove('show');$('profilePhotoResult').hidden=true;$('profilePhotoResult').removeAttribute('src');$('profilePhotoPlaceholder').style.display='grid';$('profilePhotoPlaceholder').textContent='Memuat foto profil…';$('scanPhotoResult').removeAttribute('src');$('resultNama').textContent='';$('resultMeta').textContent=''}
     function median_(v){if(!v?.length)return 0;const s=[...v].sort((a,b)=>a-b),m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2}function clamp_(v,min,max){return Math.min(max,Math.max(min,v))}function normalizeId(v){return String(v||'').trim().toUpperCase()}function escapeHtml(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}function escapeAttr(v){return escapeHtml(v)}
   </script>
 </body>
